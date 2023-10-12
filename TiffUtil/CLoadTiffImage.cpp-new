@@ -1,0 +1,242 @@
+#include "CTiffFileInc.h"
+#include "tiffio.h"
+#include <memory.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <string.h>
+#ifdef STDOUT_FOR_DEBUG_OFFSET
+#include<iostream>
+#endif
+using namespace Tiff;
+
+CLoadTiffImage::CLoadTiffImage(void)
+{
+    m_aTiff = 0L;
+    m_iImgBytes = 0;
+    m_acBuffer = 0L;
+    
+    memset(m_aiSize, 0, sizeof(m_aiSize));
+}
+
+CLoadTiffImage::~CLoadTiffImage(void)
+{
+    if(m_aTiff != 0L)
+    {
+        TIFFCleanup((TIFF*)m_aTiff);
+        m_aTiff = 0L;
+    }
+    
+    if(m_acBuffer != 0L)
+    {
+        delete[] m_acBuffer;
+        m_acBuffer = 0L;
+    }
+}
+
+//Should not open tiff here.
+//Open when you need it
+//Try not to use non-basic types in definition
+void CLoadTiffImage::SetFile(int iFile)
+{
+    CLoadTiffHeader aLoadHeader;
+    aLoadHeader.DoIt(iFile);
+    m_iRowsPerStrip = aLoadHeader.GetRowsPerStrip();
+    m_iPixelBytes = aLoadHeader.GetBits() / 8;
+    aLoadHeader.GetSize(m_aiSize, 3);
+    m_iImgBytes = m_aiSize[0] * m_aiSize[1] * m_iPixelBytes;
+    m_iXTileNum = aLoadHeader.GetXTileNum();
+    m_iYTileNum = aLoadHeader.GetYTileNum();
+    m_iXTileSize = aLoadHeader.GetXTileSize();
+    m_iYTileSize = aLoadHeader.GetYTileSize();
+    //-------------------------------------------------------
+    m_iBlockSize = m_iXTileSize * m_iYTileSize * m_iPixelBytes;
+    mGetIOBuffer(m_iBlockSize);
+#ifdef __APPLE_CC__
+    lseek(iFile, 0, SEEK_SET);
+#else
+    lseek64(iFile, 0, SEEK_SET);
+#endif
+    m_aTiff = (void*)TIFFFdOpen(iFile, "\0", "r");
+    
+}
+
+void* CLoadTiffImage::DoIt(int iNthImage)
+{
+    if(m_aTiff == 0L) return 0L;
+    void* pvImage = GetBuffer();
+    DoIt(iNthImage, pvImage);
+    return pvImage;
+}
+
+void CLoadTiffImage::DoIt(int iNthImage, void* pvImage)
+{
+    if(m_aTiff == 0L)
+        return;
+    if(pvImage == 0L)
+        return;
+    if(iNthImage < 0 || iNthImage >= m_aiSize[2])
+        return;
+    
+    if(m_iRowsPerStrip > 0)
+    {
+        ReadTIFFStrip(iNthImage, pvImage);
+    }else
+    {
+        ReadTIFFTile(iNthImage, pvImage);
+    }
+}
+
+void CLoadTiffImage::DoPart(int iNthImage, int* piOffset,
+                    int* piPartSize, void* pvImage)
+{
+    if(m_aTiff == 0L)
+        return;
+    if(pvImage == 0L)
+        return;
+    if(iNthImage < 0 || iNthImage >= m_aiSize[2])
+        return;
+        
+    if(m_iRowsPerStrip > 0)
+    {
+        ReadTIFFStrip(iNthImage, pvImage, piOffset[0], piOffset[1],
+                                        piPartSize[0], piPartSize[1]);
+    }else
+    {
+        ReadTIFFTile(iNthImage, pvImage, piOffset[0], piOffset[1],
+                                        piPartSize[0], piPartSize[1]);
+    }
+}
+
+void* CLoadTiffImage::GetBuffer(void)
+{
+	if(m_iImgBytes <= 0) return 0L;
+	void* pvBuf = new char[m_iImgBytes];
+	return pvBuf;
+}
+
+void CLoadTiffImage::ReadTIFFTile(int iNthImage, void* pvImage, 
+                                int iOffsetX, int iOffsetY,
+                                int iWidth, int iHeight)
+{
+    TIFF* m_tif = (TIFF*)m_aTiff;
+    char *pvRead, *pvWrite;
+    int iBlockNum = 0;
+    int iXstart, iXend, iYstart, iYend;
+    int iXtile, iYtile, iYtrans, iRow;
+    int iXmin = iOffsetX, iYmin = iOffsetY;
+    int iXmax = iXmin + iWidth - 1;
+    int iYmax = iYmin + iHeight - 1;
+    int iCopyLen = 0, iOffsetRead, iOffsetWrite;
+    TIFFSetDirectory(m_tif, iNthImage);
+    
+    if(iWidth <= 0)
+        iXmax = iXmin + m_aiSize[0] - 1;
+    if(iHeight <= 0)
+        iYmax = iYmin + m_aiSize[1] - 1;
+    
+    int iOutputWidth = iXmax - iXmin + 1;
+    
+    for(iYtile = 0; iYtile < m_iYTileNum; iYtile++)
+    {
+        iYstart = iYmax - m_iRowsPerStrip * (iYtile + 1) + 1;
+        iYend = iYmax - m_iRowsPerStrip * iYtile;
+        if(iYmin > iYstart)
+            iYstart = iYmin;
+        if(iYmax < iYend)
+            iYend = iYmax;
+        if(iYstart > iYend)
+            continue;
+        
+        for(iXtile = 0; iXtile < m_iXTileNum; iXtile++)
+        {
+            iXstart = iXtile * m_iXTileSize;
+            iXend = iXstart + m_iXTileSize - 1;
+            if(iXmin > iXstart)
+                iXstart = iXmin;
+            if(iXmax < iXend)
+                iXend = iXmax;
+            if(iXstart > iXend)
+                continue;
+            
+            iBlockNum = iXtile + iYtile * m_iXTileNum;
+            TIFFReadEncodedTile(m_tif, iBlockNum, m_acBuffer, m_iBlockSize);
+            iCopyLen = iXend + 1 - iXstart;
+            
+            for(iYtrans = iYstart; iYtrans <= iYend; iYtrans++)
+            {
+                iRow = iYmax - iYtrans - iYtile * m_iYTileSize;
+                iOffsetRead = m_iPixelBytes * 
+                    ((iRow - iXtile) * m_iXTileSize + iXstart);
+                iOffsetWrite = m_iPixelBytes *
+                    ((iYtrans - iYmin) * iOutputWidth + iXstart - iXmin);
+                pvRead = m_acBuffer + iOffsetRead;
+                pvWrite = (char*)pvImage + iOffsetWrite;
+                memcpy(pvWrite, pvRead, iCopyLen * m_iPixelBytes);
+            }
+        }
+    }
+}
+
+void CLoadTiffImage::ReadTIFFStrip(int iNthImage, void* pvImage, 
+                                int iOffsetX, int iOffsetY,
+                                int iWidth, int iHeight)
+{
+    TIFF* m_tif = (TIFF*)m_aTiff;
+    char *pvRead, *pvWrite;
+    int iBlockNum = 0;
+    int iYstart, iYend;
+    int iYtile, iYtrans, iRow;
+    int iXmin = iOffsetX, iYmin = iOffsetY;
+    int iXmax = iXmin + iWidth - 1;
+    int iYmax = iYmin + iHeight - 1;
+    int iCopyLen = 0, iOffsetRead, iOffsetWrite;
+    TIFFSetDirectory(m_tif, iNthImage);
+    
+    if(iWidth <= 0)
+        iXmax = iXmin + m_aiSize[0] - 1;
+    if(iHeight <= 0)
+        iYmax = iYmin + m_aiSize[1] - 1;
+    
+    int iOutputWidth = iXmax - iXmin + 1;
+    iCopyLen = iOutputWidth;
+    for(iYtile = 0; iYtile < m_iYTileNum; iYtile++)
+    {
+        iYstart = iYmax - m_iRowsPerStrip * (iYtile + 1) + 1;
+        iYend = iYmax - m_iRowsPerStrip * iYtile;
+        if(iYmin > iYstart)
+            iYstart = iYmin;
+        if(iYmax < iYend)
+            iYend = iYmax;
+        if(iYstart > iYend)
+            continue;
+        
+        
+        iBlockNum = iYtile;
+        TIFFReadEncodedStrip(m_tif, iBlockNum, m_acBuffer, m_iBlockSize);
+        
+        for(iYtrans = iYstart; iYtrans <= iYend; iYtrans++)
+        {
+            iRow = iYmax - iYtrans - iYtile * m_iYTileSize;
+            iOffsetRead = m_iPixelBytes * 
+                (iRow * m_iXTileSize + iXmin);
+            iOffsetWrite = m_iPixelBytes *
+                ((iYtrans - iYmin) * iOutputWidth);
+            pvRead = m_acBuffer + iOffsetRead;
+            pvWrite = (char*)pvImage + iOffsetWrite;
+#ifdef STDOUT_FOR_DEBUG_OFFSET
+            std::cout<<"offsetin: "<<iOffsetRead<<"\noffsetout: "<<iOffsetWrite<<"\n";
+            std::cout<<"copysize: "<<iCopyLen * m_iPixelBytes<<"\n";
+#endif
+            memcpy(pvWrite, pvRead, iCopyLen * m_iPixelBytes);
+        }
+    }
+}
+
+void CLoadTiffImage::mGetIOBuffer(int iSize)
+{
+    if(m_acBuffer != 0L)
+        delete[] m_acBuffer;
+    m_acBuffer = new char[m_iBlockSize];
+    if(m_acBuffer == 0L) //Should allocation fail
+        return;
+}
