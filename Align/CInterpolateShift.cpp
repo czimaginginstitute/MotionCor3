@@ -23,7 +23,7 @@ CInterpolateShift::~CInterpolateShift(void)
 CStackShift* CInterpolateShift::DoIt
 (	CStackShift* pGroupShift, 
 	DU::CFmGroupParam* pFmGroupParam,
-	DU::CFmIntegrateParam* pFmIntParam,
+	DU::CFmIntParam* pFmIntParam,
 	bool bNearest
 )
 {	CStackShift* pStackShift = new CStackShift;
@@ -37,7 +37,7 @@ void CInterpolateShift::DoIt
 (	CStackShift* pGroupShift,
 	CStackShift* pOutShift,
 	DU::CFmGroupParam* pFmGroupParam,
-	DU::CFmIntegrateParam* pFmIntParam,
+	DU::CFmIntParam* pFmIntParam,
 	bool bNearest
 )
 {	m_iNumFrames = pOutShift->m_iNumFrames;

@@ -115,14 +115,14 @@ bool CMain::mDoSingleCryoEM(void)
 	// Create CPU/GPU buffer while the movie is being loaded.
 	//-------------------------------------------------------	
 	mCreateBufferPool(aiStkSize, 0);
-	//-------------------------------------------------------
-	MrcUtil::CLoadRefs* pLoadRefs = MrcUtil::CLoadRefs::GetInstance();
+	//-----------------
+	CLoadRefs* pLoadRefs = CLoadRefs::GetInstance();
         pLoadRefs->AugmentRefs(aiStkSize);
-	//---------------------------------------------------------
+	//-----------------
 	CGenStarFile* pGenStarFile = CGenStarFile::GetInstance();
 	pGenStarFile->OpenFile(pcInTiff);
         pGenStarFile->SetStackSize(aiStkSize);
-	//------------------------------------
+	//-----------------
 	bool bLoaded = true;
 	if(pInput->IsInTiff())
 	{	s_pLoadedPackage = (DU::CDataPackage*)
@@ -137,14 +137,14 @@ bool CMain::mDoSingleCryoEM(void)
 		   MU::CLoadCryoEMStack::GetPackage();	
 	}
 	if(s_pLoadedPackage == 0L) return false;	
-	//------------------------------------
+	//-----------------
 	mOpenInAlnFile();
 	mOpenOutAlnFile();
-	//----------------
+	//-----------------
 	m_aProcessThread.DoIt(s_pLoadedPackage);
 	s_pLoadedPackage = 0L;
 	mWaitSaveThread();
-	//------------------------
+	//-----------------
 	pGenStarFile->CloseFile();
 	return true;
 }
@@ -156,16 +156,16 @@ bool CMain::mDoSerialCryoEM(void)
         if(pInput->IsInMrc()) pcPrefix = pInput->m_acInMrcFile;
 	else if(pInput->IsInTiff()) pcPrefix = pInput->m_acInTifFile;
 	else pcPrefix = pInput->m_acInEerFile;
-	//------------------------------------
+	//-----------------
 	if(pInput->IsInTiff()) mDoSerialCryoEMTiff();
 	else if(pInput->IsInEer()) mDoSerialCryoEMEer();
 	else mDoSerialCryoEMMrc();	
-	//------------------------
+	//-----------------
 	mWaitProcessThread();
 	CSaveSerialCryoEM* pSaveSerialCryoEM = 
 	   CSaveSerialCryoEM::GetInstance();
 	pSaveSerialCryoEM->WaitForExit(100000.0f);
-	//----------------------------------------
+	//-----------------
 	return true;
 }
 
@@ -260,8 +260,8 @@ void CMain::mDoSerialCryoEMTiff(void)
 void CMain::mDoSerialCryoEMEer(void)
 {
 	int iCount = 0;
-	MrcUtil::CLoadRefs* pLoadRefs = MrcUtil::CLoadRefs::GetInstance();
-	//----------------------------------------------------------------
+	CLoadRefs* pLoadRefs = CLoadRefs::GetInstance();
+	//-----------------
 	while(true)
 	{	int iSize = s_pStackFolder->GetQueueSize();
 		if(iSize == 0)
@@ -274,14 +274,14 @@ void CMain::mDoSerialCryoEMEer(void)
 		mWaitSaveThread();
 		int iErr = mAsyncLoad(iCount);
 		if(iErr == 1) continue;
-		//------------------------------------------------------------
+		//----------------------------------------------------
 		// Here is the overlapping of loading with processing
-		//------------------------------------------------------------
+		//----------------------------------------------------
                 s_pLoadedPackage = (DU::CDataPackage*)EU::
 		   CLoadEerMain::GetPackage();
 		if(iErr == 2) sDeletePackage();
 		if(s_pLoadedPackage == 0L) continue;	
-		//----------------------------------
+		//----------------
 		mOpenInAlnFile();
 		mOpenOutAlnFile();
                 //----------------
@@ -316,7 +316,7 @@ int CMain::mAsyncLoad(int iCount)
 	if(!bSuccess) return 2;  // buffer err
 	//-----------------
 	if(pInput->IsInEer())
-	{	MU::CLoadRefs* pLoadRefs = MU::CLoadRefs::GetInstance();
+	{	CLoadRefs* pLoadRefs = CLoadRefs::GetInstance();
 		pLoadRefs->AugmentRefs(aiStkSize);	
 	}
 	return 0;           // no error;
@@ -325,20 +325,19 @@ int CMain::mAsyncLoad(int iCount)
 bool CMain::mLoadRefs(void)
 {
 	CInput* pInput = CInput::GetInstance();
-	MrcUtil::CLoadRefs* pLoadRefs
-	   = MrcUtil::CLoadRefs::GetInstance();
-	//-------------------------------------
+	CLoadRefs* pLoadRefs = CLoadRefs::GetInstance();
+	//-----------------
 	bool bLoadGain = pLoadRefs->LoadGain(pInput->m_acGainMrc);
 	bool bLoadDark = pLoadRefs->LoadDark(pInput->m_acDarkMrc);
 	pLoadRefs->PostProcess(pInput->m_iRotGain, 
 	   pInput->m_iFlipGain, pInput->m_iInvGain);
-	//------------------------------------------
+	//-----------------
 	if(bLoadGain) printf("Gain reference has been loaded.\n");
 	else printf("Gain reference not found.\n");
-	//------------------------------------------
+	//-----------------
 	if(bLoadDark) printf("Dark reference has been loaded.\n\n");
 	else printf("DarkReference not found.\n\n");
-	//------------------------------------------
+	//-----------------
 	return bLoadGain;
 }
 

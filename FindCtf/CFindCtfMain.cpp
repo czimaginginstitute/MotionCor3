@@ -13,10 +13,12 @@ bool CFindCtfMain::m_bEstCtf = true;
 
 CFindCtfMain::CFindCtfMain(void)
 {
+	m_pFindCtf2D = 0L;
 }
 
 CFindCtfMain::~CFindCtfMain(void)
 {
+	if(m_pFindCtf2D != 0L) delete m_pFindCtf2D;
 }
 
 bool CFindCtfMain::bEstimate(void)
@@ -37,61 +39,20 @@ bool CFindCtfMain::bEstimate(void)
 
 void CFindCtfMain::DoIt
 (	float* gfImg, int* piImgSize, bool bPadded,
-	float* gfBuf,
-	DU::CDataPackage* pPackage
+	float* gfBuf, DU::CDataPackage* pPackage
 )
 {	if(!CFindCtfMain::m_bEstCtf) return;
-	//------------------------------------------------------------
-	// calculate averged power spectrum over a set of tiles.
-	//------------------------------------------------------------
-	CGenAvgSpectrum genAvgSpect;
-	genAvgSpect.SetSizes(piImgSize, bPadded, 512);
-	int iSpectPixels = genAvgSpect.GetSpectPixels();
-	float* gfAvgSpect = gfBuf;
-	float* gfFullSpect = gfAvgSpect + iSpectPixels;
-	float* gfExtBuf = gfFullSpect + iSpectPixels * 2;
-	genAvgSpect.DoIt(gfImg, gfExtBuf, gfAvgSpect);
-	//------------------------------------------------------------
-	// estimate CTF on the averaged power spectrum.
-	//------------------------------------------------------------
-	CInput* pInput = CInput::GetInstance();
-	float fPixSize = pPackage->m_pAlnSums->m_fPixSize;
-	CCtfParam ctfParam;
-	ctfParam.Setup(pInput->m_iKv, pInput->m_fCs, 
-	   pInput->m_fAmpCont, fPixSize);
 	//-----------------
-	float fDfRange = 40000.0f * fPixSize * fPixSize;
-	float fPhaseRange = fminf(pInput->m_fExtPhase * 2.0f, 180.0f);
+	m_pPackage = pPackage;
+	m_pFindCtf2D = new CFindCtf2D;
 	//-----------------
-	CFindCtf2D* pFindCtf2D = new CFindCtf2D;
-	pFindCtf2D->Setup1(genAvgSpect.m_aiSpectSize);
-	pFindCtf2D->Setup2(&ctfParam);
-	pFindCtf2D->SetDfRange(fDfRange);
-	pFindCtf2D->SetAstRange(0.10f);
-	pFindCtf2D->SetAngRange(180.0f);
-	pFindCtf2D->SetPhaseRange(fPhaseRange);
-	pFindCtf2D->DoIt(gfAvgSpect);
-	//-----------------
-	CCtfParam* pResParam = pFindCtf2D->GetResult();
-	pPackage->SetCtfParam(pResParam);
-	float afResRange[2] = {0.0f};
-	pFindCtf2D->GetResRange(afResRange);
-	delete pFindCtf2D;
-	//------------------------------------------------------------
-	// generate full spectrum with CTF embedded for diagnosis.
-	//------------------------------------------------------------
-	CFullSpectrum fullSpectrum;
-	fullSpectrum.Create(gfAvgSpect, gfExtBuf, 
-	   genAvgSpect.m_aiSpectSize, pResParam, 
-	   afResRange, gfFullSpect);
-	//-----------------
-	DU::CMrcStack* pCtfStack = new DU::CMrcStack;
-        pCtfStack->Create(2, fullSpectrum.m_aiFullSize, 1);
-	float* pfCtfImg = (float*)pCtfStack->GetFrame(0);
-	fullSpectrum.ToHost(pfCtfImg);
-	pPackage->SetCtfStack(pCtfStack);
+	mGenSpectrums(gfImg, piImgSize, bPadded, gfBuf);
+	mFindCTF();
+	mEmbedCTF();
+	mAddSpectrumToPackage();
 	//-----------------
 	bool bAngstrom = true, bDegree = true;
+	CCtfParam* pResParam = m_pFindCtf2D->GetResult();
 	printf("CTF estimate\n");
 	printf("  Df_max [A]   Df_min [A]  Azimuth [d]  "
 	   "Phase [d]    Score\n");
@@ -102,5 +63,98 @@ void CFindCtfMain::DoIt
 	   pResParam->GetExtPhase(bDegree),
 	   pResParam->m_fScore);
 	printf("\n");
+	//-----------------
+	if(m_pFindCtf2D != 0L) delete m_pFindCtf2D;
+	m_pFindCtf2D = 0L;
 }
 
+//------------------------------------------------------------
+// 1. calculate averged power spectrum over a set of tiles,
+// 2. and remove its background for CTF estimation,
+// 3. and generate full spectrum.
+// 4. m_gfFullSpect is padded with size of [iTileSize + 2,
+//    iTileSize].
+//------------------------------------------------------------
+void CFindCtfMain::mGenSpectrums
+(	float* gfImg, int* piImgSize, 
+	bool bPadded, float* gfBuf
+)
+{	CGenAvgSpectrum genAvgSpect;
+	genAvgSpect.SetSizes(piImgSize, bPadded, 512);
+	int iSpectPixels = genAvgSpect.GetSpectPixels();
+	m_gfAvgSpect = gfBuf;
+	m_gfFullSpect = m_gfAvgSpect + iSpectPixels;
+	m_gfExtBuf = m_gfFullSpect + iSpectPixels * 2;
+	//-----------------
+	m_aiSpectSize[0] = genAvgSpect.m_aiSpectSize[0];
+	m_aiSpectSize[1] = genAvgSpect.m_aiSpectSize[1];
+	//-----------------
+        genAvgSpect.DoIt(gfImg, m_gfExtBuf, m_gfAvgSpect, m_gfFullSpect);
+}
+
+void CFindCtfMain::mFindCTF(void)
+{
+	CInput* pInput = CInput::GetInstance();
+	float fPixSize = m_pPackage->m_pAlnSums->m_fPixSize;
+	CCtfParam ctfParam;
+	ctfParam.Setup(pInput->m_iKv, pInput->m_fCs,
+	   pInput->m_fAmpCont, fPixSize);
+	//-----------------
+	float fDfRange = 40000.0f * fPixSize * fPixSize;
+	float fPhaseRange = fminf(pInput->m_fExtPhase * 2.0f, 180.0f);
+	//-----------------
+	m_pFindCtf2D->Setup1(m_aiSpectSize);
+	m_pFindCtf2D->Setup2(&ctfParam);
+	m_pFindCtf2D->SetDfRange(fDfRange);
+	m_pFindCtf2D->SetAstRange(0.10f);
+	m_pFindCtf2D->SetAngRange(180.0f);
+	m_pFindCtf2D->SetPhaseRange(fPhaseRange);
+	m_pFindCtf2D->DoIt(m_gfAvgSpect);
+	//-----------------
+	CCtfParam* pResParam = m_pFindCtf2D->GetResult();
+        m_pPackage->SetCtfParam(pResParam);
+}
+
+void CFindCtfMain::mEmbedCTF(void)
+{
+	Util::GCalcMoment2D calcMoment;
+        bool bSync = true, bPadded = true;
+        calcMoment.SetSize(m_aiSpectSize, !bPadded);
+        float fMean = calcMoment.DoIt(m_gfAvgSpect, 1, bSync);
+        float fStd = calcMoment.DoIt(m_gfAvgSpect, 2, bSync);
+        fStd = fStd - fMean * fMean;
+        if(fStd < 0) fStd = 0.0f;
+        else fStd = sqrt(fStd);
+	float fGain = fStd * 1.5f;
+	//-----------------
+	float afResRange[2] = {0.0f};
+	m_pFindCtf2D->GetResRange(afResRange);
+	//-----------------
+	CCtfParam* pResParam = m_pFindCtf2D->GetResult();
+	float fPixelSize = pResParam->GetPixSize();
+        float fMinFreq = fPixelSize / afResRange[0];
+        float fMaxFreq = fPixelSize / afResRange[1];
+        //-----------------
+        GCalcCTF2D calcCtf2D;
+        calcCtf2D.DoIt(pResParam, m_gfExtBuf, m_aiSpectSize);
+	//-----------------
+        calcCtf2D.EmbedCtf(m_gfExtBuf, m_aiSpectSize,
+	   fMinFreq, fMaxFreq, fMean, fGain, 
+	   m_gfFullSpect, true);
+}
+
+void CFindCtfMain::mAddSpectrumToPackage(void)
+{
+	int aiFullSize[] = {0, m_aiSpectSize[1]};
+	aiFullSize[0] = (m_aiSpectSize[0] - 1) * 2;
+	//-----------------
+	DU::CMrcStack* pCtfStack = new DU::CMrcStack;
+        pCtfStack->Create(2, aiFullSize, 1);
+        float* pfCtfImg = (float*)pCtfStack->GetFrame(0);
+	//-----------------
+	Util::CPad2D pad2D;
+	int aiPadSize[] = {m_aiSpectSize[0] * 2, m_aiSpectSize[1]};
+	pad2D.Unpad(m_gfFullSpect, aiPadSize, pfCtfImg);
+        //-----------------
+	m_pPackage->SetCtfStack(pCtfStack);
+}

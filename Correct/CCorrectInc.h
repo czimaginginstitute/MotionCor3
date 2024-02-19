@@ -4,7 +4,6 @@
 #include "../MotionDecon/CMotionDeconInc.h"
 #include "../Align/CAlignInc.h"
 #include <Util/Util_Thread.h>
-#include <CuUtil/DeviceArray2D.h>
 #include <cufft.h>
 
 namespace MotionCor2

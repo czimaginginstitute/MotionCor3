@@ -2,10 +2,10 @@
 #include "../CMainInc.h"
 #include "../Util/CUtilInc.h"
 #include "../DataUtil/CDataUtilInc.h"
-#include <CuUtil/DeviceArray2D.h>
 #include <Util/Util_Thread.h>
 #include <cuda.h>
 #include <cufft.h>
+#include <cuda_runtime.h>
 
 namespace MotionCor2
 {
@@ -142,14 +142,14 @@ public:
 	CStackShift* DoIt
 	( CStackShift* pGroupShift,
 	  DU::CFmGroupParam* pFmGroupParam,
-	  DU::CFmIntegrateParam* pFmIntParam,
+	  DU::CFmIntParam* pFmIntParam,
 	  bool bNearest
 	);
 	void DoIt
 	( CStackShift* pGroupShift, 
 	  CStackShift* pOutShift,
 	  DU::CFmGroupParam* pFmGroupParam,
-	  DU::CFmIntegrateParam* pFmIntParam, 
+	  DU::CFmIntParam* pFmIntParam, 
 	  bool bNearest
 	);
 private:

@@ -24,7 +24,7 @@ static CLoadTiffStack* s_pLoadTiffStacks = 0L;
 //--------------------------------------------
 static DU::CStackFolder* s_pStackFolder = 0L;
 static DU::CDataPackage* s_pPackage = 0L;
-static DU::CFmIntegrateParam* s_pFmIntParam = 0L;
+static DU::CFmIntParam* s_pFmIntParam = 0L;
 
 static void sDeletePackage(void)
 {
@@ -79,7 +79,7 @@ bool CLoadTiffStack::OpenFile(int aiStkSize[3])
 	// a new package amd we create an object
 	//----------------------------------------------------
 	if(s_pPackage->m_pFmIntParam == 0L)
-	{	s_pPackage->m_pFmIntParam = new DataUtil::CFmIntegrateParam;
+	{	s_pPackage->m_pFmIntParam = new DataUtil::CFmIntParam;
 	}
 	s_pPackage->m_pFmIntParam->Setup(aiStkSize[2], s_iMode);
 	aiStkSize[2] = s_pPackage->m_pFmIntParam->m_iNumIntFms;
@@ -100,12 +100,12 @@ bool CLoadTiffStack::OpenFile(int aiStkSize[3])
 	{	s_pPackage->m_pRawStack = new DataUtil::CMrcStack;
 	}
 	int iIntMode = s_iMode;
-	if(s_pPackage->m_pFmIntParam->NeedIntegrate()) 
+	if(s_pPackage->m_pFmIntParam->bIntegrate()) 
 	{	iIntMode = Mrc::eMrcUChar;
 	}
 	s_pPackage->m_pRawStack->Create(iIntMode, aiStkSize);
 	//----------------------------------------------------
-	printf("Rendered size mode: %d  %d  %d  %d\n", 
+	printf("Rendered size mode: %d  %d  %d  %d\n\n", 
 	  aiStkSize[0], aiStkSize[1], aiStkSize[2], s_iMode);
 	close(iFile);
 	return true;
@@ -173,7 +173,7 @@ void CLoadTiffStack::ThreadMain(void)
 	m_pLoadTiffImage = new CLoadTiffImage;
 	m_pLoadTiffImage->SetFile(m_iFile);
 	//---------------------------------
-	if(s_pPackage->m_pFmIntParam->NeedIntegrate()) 
+	if(s_pPackage->m_pFmIntParam->bIntegrate()) 
 	{	CInput* pInput = CInput::GetInstance();
 		if(pInput->m_iSerial == 0) mLoadIntGpu();
 		else mLoadIntCpu();

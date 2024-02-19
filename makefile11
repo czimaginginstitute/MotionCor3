@@ -3,8 +3,8 @@ CONDA = $(HOME)/miniconda3
 CUDAHOME = $(HOME)/nvidia/cuda-12.1
 CUDAINC = $(CUDAHOME)/include
 CUDALIB = $(CUDAHOME)/lib64
-PRJINC = $(PRJHOME)/Include
-PRJLIB = $(PRJHOME)/Lib
+PRJINC = $(PRJHOME)/LibSrc/Include
+PRJLIB = $(PRJHOME)/LibSrc/Lib
 #-----------------------------
 CUSRCS = ./Util/GAddFrames.cu \
 	./Util/GCalcMoment2D.cu \
@@ -65,7 +65,7 @@ SRCS = ./Util/CCufft2D.cpp \
 	./DataUtil/CMrcStack.cpp \
 	./DataUtil/CAlnSums.cpp \
 	./DataUtil/CReadFmIntFile.cpp \
-	./DataUtil/CFmIntegrateParam.cpp \
+	./DataUtil/CFmIntParam.cpp \
 	./DataUtil/CFmGroupParam.cpp \
 	./DataUtil/CDataPackage.cpp \
 	./DataUtil/CStackFolder.cpp \
@@ -102,7 +102,6 @@ SRCS = ./Util/CCufft2D.cpp \
 	./MrcUtil/CAnalyzeMrc.cpp \
 	./MrcUtil/CApplyRefs.cpp \
 	./MrcUtil/CAsyncSingleSave.cpp \
-	./MrcUtil/CLoadRefs.cpp \
 	./MrcUtil/CLoadCryoEMStack.cpp \
 	./MrcUtil/CLoadStack.cpp \
 	./MrcUtil/CSaveSingleCryoEM.cpp \
@@ -118,7 +117,6 @@ SRCS = ./Util/CCufft2D.cpp \
 	./EerUtil/CLoadEerMain.cpp \
 	./FindCtf/CCtfTheory.cpp \
 	./FindCtf/CGenAvgSpectrum.cpp \
-	./FindCtf/CFullSpectrum.cpp \
 	./FindCtf/CFindCtfBase.cpp \
 	./FindCtf/CFindCtf1D.cpp \
 	./FindCtf/CFindCtf2D.cpp \
@@ -130,6 +128,7 @@ SRCS = ./Util/CCufft2D.cpp \
 	./CGpuBuffer.cpp \
 	./CStackBuffer.cpp \
 	./CBufferPool.cpp \
+	./CLoadRefs.cpp \
 	./CCheckFreeGpus.cpp \
 	./CProcessThread.cpp \
 	./CSaveSerialCryoEM.cpp \
@@ -158,7 +157,7 @@ compile: $(OBJS)
 
 exe: $(OBJS)
 	@$(NVCC) -g -G -m64 $(OBJS) \
-	$(PRJLIB)/libmrcfile.a $(PRJLIB)/libutil.a $(PRJLIB)/libcuutil.a \
+	$(PRJLIB)/libmrcfile.a $(PRJLIB)/libutil.a \
 	-L$(CUDALIB) \
 	-L$(CONDA)/lib \
 	-L/usr/lib64 \

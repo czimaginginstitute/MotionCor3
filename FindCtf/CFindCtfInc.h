@@ -172,12 +172,10 @@ public:
 	  int* piCmpSize
 	);
 	void EmbedCtf
-	( float* gfCtf2D,
-	  float fMinFreq,
-	  float fMaxFreq, // relative freq
+	( float* gfCtf2D, int* piCmpSize,
+	  float fMinFreq, float fMaxFreq, // relative freq
 	  float fMean, float fGain, // for scaling
-	  float* gfFullSpect,
-	  int* piCmpSize  // size of gfCtf2D
+	  float* gfFullSpect, bool bPadded
 	); 
 
 private:
@@ -206,9 +204,8 @@ public:
 	  int* piSize
 	);
 	void GenFullSpect
-	( float* gfHalfSpect,
-	  int* piCmpSize,
-	  float* gfFullSpect
+	( float* gfHalfSpect, int* piCmpSize,
+	  float* gfFullSpect, bool bFullPadded
 	);
 };
 
@@ -356,14 +353,17 @@ public:
 	void DoIt
 	( float* gfImage, 
 	  float* gfBuf, 
-	  float* gfAvgSpect
+	  float* gfAvgSpect, // m_aiSpectSize
+	  float* gfFullSpect // [iTileSize + 1, iTileSize]
 	);
-	int m_aiSpectSize[2]; // Half spectrum
+	int m_aiSpectSize[2]; // [iTileSize/2+1, iTileSize]
 private:
 	void mAverage(void);
 	void mCalcTileSpectrum(int iTile);
 	void mExtractPadTile(int iTile);
 	void mRmBackground(void);
+	void mLowpass(void);
+	//-----------------
 	Util::GCalcMoment2D* m_pGCalcMoment2D;
 	float* m_gfImg;
 	int m_aiImgSize[2]; // unpadded image size
@@ -371,6 +371,8 @@ private:
 	int m_aiOffset[2];
 	int m_iOverlap;
 	float m_fOverlap;
+	//-----------------
+	float* m_gfFullSpect; // padded
 	float* m_gfAvgSpect;
 	float* m_gfTileSpect;
 	float* m_gfPadTile;
@@ -395,6 +397,7 @@ public:
 private:
 	void mGenFullSpectrum(void);
 	void mEmbedCTF(void);
+	//-----------------
 	float* m_gfHalfSpect;
 	float* m_gfCtfBuf;
 	float* m_gfFullSpect;
@@ -601,6 +604,20 @@ public:
 	);
 	static bool m_bEstCtf;
 private:
+	void mGenSpectrums
+	( float* gfImg, int* piImgSize, 
+	  bool bPadded, float* gfBuf
+	);
+	void mFindCTF(void);
+	void mEmbedCTF(void);
+	void mAddSpectrumToPackage(void);
+	//-----------------
+	int m_aiSpectSize[2]; // [iTileSize/2+1, iTileSize]
+	float* m_gfAvgSpect;
+	float* m_gfFullSpect; // [iTileSize+2, iTileSize]
+	float* m_gfExtBuf;
+	//-----------------
+	CFindCtf2D* m_pFindCtf2D;
 	DU::CDataPackage* m_pPackage;
 };
 

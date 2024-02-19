@@ -17,7 +17,7 @@ namespace DU = MotionCor2::DataUtil;
 static int s_iMode = 0;
 static DU::CStackFolder* s_pStackFolder = 0L;
 static DU::CDataPackage* s_pPackage = 0L;
-static DU::CFmIntegrateParam* s_pFmIntParam = 0L;
+static DU::CFmIntParam* s_pFmIntParam = 0L;
 static CLoadCryoEMStack* s_pLoadCryoEMStack = 0L;
 
 static void sDeletePackage(void)
@@ -66,10 +66,10 @@ bool CLoadCryoEMStack::OpenFile(int aiStkSize[3])
 	   aiStkSize[0], aiStkSize[1], aiStkSize[2], s_iMode);
 	//----------------------------------------------------------
 	// If s_pPackage does not have CFmIntParam, this is a new
-	// package and we create a new CFmIntegrateParam object.
+	// package and we create a new CFmIntParam object.
 	//----------------------------------------------------------
 	if(s_pPackage->m_pFmIntParam == 0L)
-	{	s_pPackage->m_pFmIntParam = new DU::CFmIntegrateParam;
+	{	s_pPackage->m_pFmIntParam = new DU::CFmIntParam;
 	}
 	s_pPackage->m_pFmIntParam->Setup(aiStkSize[2], s_iMode);
 	aiStkSize[2] = s_pPackage->m_pFmIntParam->m_iNumIntFms;
@@ -91,7 +91,7 @@ bool CLoadCryoEMStack::OpenFile(int aiStkSize[3])
 	{	s_pPackage->m_pRawStack = new DataUtil::CMrcStack;
 	}
 	int iIntMode = s_iMode;
-	if(s_pPackage->m_pFmIntParam->NeedIntegrate()) 
+	if(s_pPackage->m_pFmIntParam->bIntegrate()) 
 	{	iIntMode = Mrc::eMrcUChar;
 	}
 	s_pPackage->m_pRawStack->Create(iIntMode, aiStkSize);
@@ -135,17 +135,17 @@ void CLoadCryoEMStack::ThreadMain(void)
 	m_bLoaded = false;
 	m_pLoadMrc = new Mrc::CLoadMrc;
 	m_pLoadMrc->OpenFile(s_pPackage->m_pcInFileName); 
-	//-----------------------------------------------
-	if(s_pFmIntParam->NeedIntegrate()) mLoadInt(); 
+	//-----------------
+	if(s_pFmIntParam->bIntegrate()) mLoadInt(); 
 	else mLoadSingle();
 	//-----------------
 	delete m_pLoadMrc;
 	m_pLoadMrc = 0L;
-	//--------------
+	//-----------------
 	char* pcFileName = strrchr(s_pPackage->m_pcInFileName, '/');
 	if(pcFileName == 0L) pcFileName = s_pPackage->m_pcInFileName;
 	else pcFileName = pcFileName + 1;
-	//-------------------------------
+	//-----------------
 	printf("*** %s: loaded in %.2f seconds.\n\n", pcFileName,
 	   utilTime.GetElapsedSeconds());
 	m_bLoaded = true;

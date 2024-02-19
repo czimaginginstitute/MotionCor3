@@ -1,5 +1,4 @@
 #include "CFindCtfInc.h"
-#include <CuUtilFFT/GFFT2D.h>
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <stdio.h>

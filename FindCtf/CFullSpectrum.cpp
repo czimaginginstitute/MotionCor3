@@ -47,14 +47,23 @@ void CFullSpectrum::Create
 	m_aiFullSize[1] = m_aiSpectSize[1];
 	//-----------------
 	mGenFullSpectrum();
-	mEmbedCTF();
+	if(m_pCtfParam != 0L) mEmbedCTF();
 }
-
+/*
+void CFullSpectrum::EmbedCTF
+(	float* gfFullSpect, int* piFullSize, bool bPadded,
+	CCtfParam* pCtfParam, float* pfResRange
+)
+{
+}
+*/
 void CFullSpectrum::mGenFullSpectrum(void)
 {
 	GCalcSpectrum gCalcSpect;
-	gCalcSpect.GenFullSpect(m_gfHalfSpect, m_aiSpectSize, m_gfFullSpect);
-	//-------------------------------------------------------------------
+	bool bFullPadded = true;
+	gCalcSpect.GenFullSpect(m_gfHalfSpect, m_aiSpectSize, 
+	   m_gfFullSpect, !bFullPadded);
+	//-----------------
 	Util::GCalcMoment2D gCalcMoment;
 	bool bSync = true, bPadded = true;
 	gCalcMoment.SetSize(m_aiSpectSize, !bPadded);
@@ -64,7 +73,7 @@ void CFullSpectrum::mGenFullSpectrum(void)
 	if(m_fStd < 0) m_fStd = 0.0f;
 	else m_fStd = sqrt(m_fStd);
 }
-
+/*
 void CFullSpectrum::mEmbedCTF(void)
 {
 	float fPixelSize = m_pCtfParam->GetPixSize();
@@ -77,3 +86,4 @@ void CFullSpectrum::mEmbedCTF(void)
 	gCalcCtf2D.EmbedCtf(m_gfCtfBuf, fMinFreq, fMaxFreq,
 	   m_fMean, fGain, m_gfFullSpect, m_aiSpectSize);
 }
+*/

@@ -187,9 +187,9 @@ void CBufferPool::mCreateSumBuffer(void)
         if(pAlnParam->SplitSum()) m_iNumSums += 2;
 	//-----------------
 	bool bSimpleSum = pAlnParam->SimpleSum();
-	if(DU::CFmIntegrateParam::DoseWeight() && !bSimpleSum)
+	if(DU::CFmIntParam::bDoseWeight() && !bSimpleSum)
 	{	m_iNumSums += 1;
-		if(DU::CFmIntegrateParam::DWSelectedSum()) m_iNumSums += 1;
+		if(DU::CFmIntParam::bDWSelectedSum()) m_iNumSums += 1;
 	}
 	//-----------------
 	int aiCmpSize[] = {m_aiStkSize[0] / 2 + 1, m_aiStkSize[1]};
