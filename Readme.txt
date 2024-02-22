@@ -927,4 +927,14 @@ MotionCor3_1.1.1 [02-18-2024]
    The new implementation takes into accound of the case wheren the sum
    of the 1st column is less than the input movie stack size. (02/18/2024)
 2. Added -InSkips in the command line for skipping any inputs files whose
-   file names contain the specified strings. 
+   file names contain the specified strings.
+3. DataUtil/CBufferPool::Adjust: m_pPatBuffer will be NULL when patch
+   align is not specified. Check NULL before calling Adjust.
+4. Bug fix: DataUtil/CGpuBuffer::AdjustBuffer:
+   if(iNumFrames <= m_iMaxGpuFrms)
+   {    if(iNumFrames < m_iMaxGpuFrms)  <----- wrong!
+        {       m_iNumGpuFrames = iNumFrames;
+        } <----------------------------------- wrong!
+        m_iNumFrames = iNumFrames;
+        return;
+   }
