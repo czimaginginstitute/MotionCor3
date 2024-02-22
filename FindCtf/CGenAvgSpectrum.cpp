@@ -40,22 +40,22 @@ void CGenAvgSpectrum::SetSizes(int* piImgSize, bool bPadded, int iTileSize)
 	m_aiImgSize[1] = piImgSize[1];
 	m_bPadded = bPadded;
 	if(bPadded) m_aiImgSize[0] = (m_aiImgSize[0] / 2 - 1) * 2;
-	//--------------------------------------------------------
+	//-----------------
 	m_aiSpectSize[0] = iTileSize / 2 + 1;
 	m_aiSpectSize[1] = iTileSize;
-	//-----------------------------------
+	//-----------------
 	m_iOverlap = (int)(iTileSize * m_fOverlap);
 	m_iOverlap = m_iOverlap / 2 * 2;
-	//------------------------------
+	//-----------------
 	int iSize = iTileSize - m_iOverlap;
 	m_aiNumTiles[0] = (m_aiImgSize[0] - m_iOverlap) / iSize;
 	m_aiNumTiles[1] = (m_aiImgSize[1] - m_iOverlap) / iSize;
-	//------------------------------------------------------
+	//-----------------
 	m_aiOffset[0] = (m_aiImgSize[0] - m_aiNumTiles[0] * iTileSize
 	   + (m_aiNumTiles[0] - 1) * m_iOverlap) / 2;
 	m_aiOffset[1] = (m_aiImgSize[1] - m_aiNumTiles[1] * iTileSize
 	   + (m_aiNumTiles[1] - 1) * m_iOverlap) / 2;
-	//-------------------------------------------
+	//-----------------
 	int aiPadSize[2] = {m_aiSpectSize[0] * 2, m_aiSpectSize[1]};
 	m_pGCalcMoment2D->SetSize(aiPadSize, true);
 }
@@ -63,15 +63,17 @@ void CGenAvgSpectrum::SetSizes(int* piImgSize, bool bPadded, int iTileSize)
 void CGenAvgSpectrum::DoIt
 (	float* gfImage,
 	float* gfBuf,
-	float* gfAvgSpect
+	float* gfAvgSpect,
+	float* gfFullSpect
 )
 {	m_gfImg = gfImage;
 	m_gfPadTile = gfBuf;
 	m_gfAvgSpect = gfAvgSpect;
-	//------------------------
+	m_gfFullSpect = gfFullSpect;
+	//-----------------
 	int iPadSize = m_aiSpectSize[0] * 2 * m_aiSpectSize[1];
 	m_gfTileSpect = m_gfPadTile + iPadSize;
-	//-------------------------------------
+	//-----------------
 	mAverage();
 	mRmBackground();
 }
@@ -107,11 +109,11 @@ void CGenAvgSpectrum::mCalcTileSpectrum(int iTile)
 	fStd = fStd - fMean * fMean;
 	if(fStd <= 0) fStd = 1.0f;
 	else fStd = sqrtf(fStd);
-	//---------------------------------------------------------
+	//-----------------
 	Util::GNormalize2D aGNormalize;
 	int aiPadSize[] = {m_aiSpectSize[0] * 2, m_aiSpectSize[1]};
 	aGNormalize.DoIt(m_gfPadTile, aiPadSize, true, fMean, fStd);
-	//----------------------------------------------------------
+	//-----------------
 	Util::GRoundEdge aGRoundEdge;
 	float afCent[] = {m_aiSpectSize[1] * 0.5f, m_aiSpectSize[1] * 0.5f};
 	float afSize[] = {m_aiSpectSize[1] * 1.0f, m_aiSpectSize[1] * 1.0f};
@@ -146,7 +148,7 @@ void CGenAvgSpectrum::mExtractPadTile(int iTile)
 
 void CGenAvgSpectrum::mRmBackground(void)
 {
-	float fMinFreq = 1.0f / 15.0f; // relative freq
+	float fMinFreq = 1.0f / 30.0f; // relative freq
 	int iBoxSize = (int)(m_aiSpectSize[1] * fMinFreq);
 	iBoxSize = iBoxSize / 2 * 2 + 1;
 	if(iBoxSize < 7) iBoxSize = 7;
@@ -157,20 +159,38 @@ void CGenAvgSpectrum::mRmBackground(void)
 	GRmBackground2D aGRmBackground;
 	aGRmBackground.DoIt(m_gfTileSpect, m_gfAvgSpect, 
 	   m_aiSpectSize, iBoxSize); 
-	//-----------------------------------------------------
-	// calculate mean and sigma that are used to determine
-	// hot and cold speckle in the spectrum.
-	//-----------------------------------------------------
-	Util::GCalcMoment2D calcMoment2D;
-        calcMoment2D.SetSize(m_aiSpectSize, false);
-        float fMean = calcMoment2D.DoIt(m_gfAvgSpect, 1, true);
-        float fStd = calcMoment2D.DoIt(m_gfAvgSpect, 2, true);
-        fStd = fStd - fMean * fMean;
-        if(fStd < 1.0f) return;
 	//-----------------
-        fStd = (float)sqrtf(fStd);
-	float fMin = fMean - 1.0f * fStd;
-	float fMax = fMean + 1.0f * fStd;
-	Util::GThreshold2D aGThreshold;
-	aGThreshold.DoIt(m_gfAvgSpect, m_aiSpectSize, false, fMin, fMax);
+	mLowpass();
 }
+
+void CGenAvgSpectrum::mLowpass(void)
+{
+        GCalcSpectrum calcSpectrum;
+        bool bPadded = true;
+        calcSpectrum.GenFullSpect(m_gfAvgSpect, m_aiSpectSize,
+           m_gfFullSpect, bPadded);
+        //-----------------
+        Util::CCufft2D cufft2D;
+        int aiFFTSize[] = {(m_aiSpectSize[0] - 1) * 2, m_aiSpectSize[1]};
+        cufft2D.CreateForwardPlan(aiFFTSize, false);
+        cufft2D.Forward(m_gfFullSpect, true);
+        //-----------------
+        Util::GFFTUtil2D fftUtil2D;
+        cufftComplex* gCmpFullSpect = (cufftComplex*)m_gfFullSpect;
+        fftUtil2D.Lowpass(gCmpFullSpect, gCmpFullSpect,
+           m_aiSpectSize, 5.0f);
+        //-----------------
+        cufft2D.CreateInversePlan(aiFFTSize, false);
+        cufft2D.Inverse(gCmpFullSpect);
+        //-----------------
+        int iFullSizeX = m_aiSpectSize[0] * 2;
+        int iHalfX = m_aiSpectSize[0] - 1;
+        size_t tBytes = sizeof(float) * m_aiSpectSize[0];
+	//-----------------
+        for(int y=0; y<m_aiSpectSize[1]; y++)
+        {       float* gfSrc = m_gfFullSpect + y * iFullSizeX + iHalfX;
+                float* gfDst = m_gfAvgSpect + y * m_aiSpectSize[0];
+                cudaMemcpy(gfDst, gfSrc, tBytes, cudaMemcpyDefault);
+        }
+}
+

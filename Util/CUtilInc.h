@@ -96,12 +96,19 @@ public:
 	void CreateForwardPlan(int* piSize, bool bPad);
 	void CreateInversePlan(int* piSize, bool bCmp);
 	void DestroyPlan(void);
-	bool Forward(float* gfPadImg, cufftComplex* gCmpImg,
-	   bool bNorm, cudaStream_t stream=0);
-	bool Forward(float* gfPadImg, bool bNorm, cudaStream_t stream=0);
+	bool Forward
+	( float* gfPadImg, cufftComplex* gCmpImg,
+	  bool bNorm, cudaStream_t stream = 0
+	);
+	bool Forward
+	( float* gfPadImg, bool bNorm, 
+	  cudaStream_t stream = 0
+	);
 	cufftComplex* ForwardH2G(float* pfImg, bool bNorm);
-	bool Inverse(cufftComplex* gCom, float* gfPadImg, 
-	   cudaStream_t stream=0);
+	bool Inverse
+	( cufftComplex* gCom, float* gfPadImg, 
+	  cudaStream_t stream = 0
+	);
 	bool Inverse(cufftComplex* gCom, cudaStream_t stream=0);
 	float* InverseG2H(cufftComplex* gCmp);
 	void SubtractMean(cufftComplex* gComplex);
@@ -115,33 +122,53 @@ private:
 };
 
 //-------------------------------------------------------------------
+class GFFT1D
+{
+public:
+	GFFT1D(void);
+	~GFFT1D(void);
+	void DestroyPlan(void);
+	void CreatePlan
+	( int iFFTSize,
+	  int iNumLines,
+	  bool bForward
+	);
+	void Forward(float* gfPadLines,bool bNorm);
+	void Inverse(cufftComplex* gCmpLines);
+private:
+	int m_iFFTSize;
+	int m_iNumLines;
+	cufftType m_cufftType;
+	cufftHandle m_cufftPlan;
+};
+
 class GFFTUtil2D
 {
 public:
 	GFFTUtil2D(void);
 	~GFFTUtil2D(void);
+	//-----------------
 	void Multiply
-	(  cufftComplex* gComp, 
-	   int* piCmpSize, 
-	   float fFactor,
-           cudaStream_t stream=0
+	( cufftComplex* gComp, int* piCmpSize, 
+	  float fFactor, cudaStream_t stream = 0
 	);
 	void GetAmp
-	(  cufftComplex* gComp,
-	   int* piCmpSize,
-	   float* pfAmpRes,
-	   bool bGpuRes,
-           cudaStream_t stream=0
+	( cufftComplex* gComp, int* piCmpSize,
+	   float* pfAmpRes, bool bGpuRes,
+           cudaStream_t stream = 0
 	);
 	void Shift
-	(  cufftComplex* gComp,
-	   int* piCmpSize,
-	   float* pfShift,
-           cudaStream_t stream=0
+	( cufftComplex* gComp, int* piCmpSize,
+	  float* pfShift,
+          cudaStream_t stream = 0
+	);
+	void Lowpass
+	( cufftComplex* gInCmp, cufftComplex* gOutCmp,
+	  int* piCmpSize, float fBFactor,
+	  cudaStream_t stream = 0
 	);
 };
 
-//----------------------------------------------------------
 class GRoundEdge
 {
 public:

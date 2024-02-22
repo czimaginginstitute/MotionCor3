@@ -64,20 +64,20 @@ void GDetectPatch::DoIt
 )
 {	CLocalCCMap localCCMap;
 	localCCMap.DoIt(piModSize);
-	//-------------------------
+	//-----------------
 	CBufferPool* pBufferPool = CBufferPool::GetInstance();
 	pBufferPool->SetDevice(0);
-	//------------------------
+	//-----------------
 	Util::GCalcMoment2D calcMoment;
 	calcMoment.SetSize(piPadSize, true);
 	float fMean = calcMoment.DoIt(gfPadCC, 1, true);
 	float fStd = calcMoment.DoIt(gfPadCC, 2, true);
 	fStd = (float)sqrtf(fmaxf(0, fStd - fMean * fMean));
-	//--------------------------------------------------
+	//-----------------
 	m_fCCThreshold = fMean + fStdThreshold * fStd;
-	printf("CC Mean Std: %.3e  %.3e\n", fMean, fStd);
-	printf("CC threshold: %.3f\n", m_fCCThreshold);
-	//---------------------------------------------
+	printf("CC Mean Std Threshold: %.3e  %.3e  %.3f\n\n",
+	   fMean, fStd, m_fCCThreshold);
+	//-----------------
 	mUpdateBadMap(gfPadCC, pucBadMap, piPadSize, piModSize);
 }
 

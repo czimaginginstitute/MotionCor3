@@ -10,6 +10,7 @@
 namespace MotionCor2 
 {
 namespace DU = MotionCor2::DataUtil;
+
 class CInput
 {
 public:
@@ -28,6 +29,7 @@ public:
 	char m_acInTifFile[256];
 	char m_acInEerFile[256];
 	char m_acInSuffix[256];
+	char m_acInSkips[256];
 	char m_acGainMrc[256];
 	char m_acDarkMrc[256];
 	char m_acOutMrcFile[256];
@@ -83,6 +85,7 @@ public:
 	char m_acInTifTag[32];
 	char m_acInEerTag[32];
 	char m_acInSuffixTag[32];
+	char m_acInSkipsTag[32];
 	char m_acGainMrcTag[32];
 	char m_acDarkMrcTag[32];
 	char m_acOutMrcTag[32];
@@ -272,6 +275,43 @@ private:
 	void* m_pvPinnedBuf;
 	Util::CCufft2D* m_pCufft2Ds;
 	static CBufferPool* m_pInstance;
+};
+
+class CLoadRefs
+{
+public:
+	static CLoadRefs* GetInstance(void);
+	static void DeleteInstance(void);
+	~CLoadRefs(void);
+	void CleanRefs(void);
+	bool LoadGain(char* pcGainFile);
+	bool LoadDark(char* pcDarkFile);
+	void PostProcess(int iRotFact, int iFlip, int iInverse);
+	bool AugmentRefs(int* piImgSize);
+	float* m_pfGain;
+	float* m_pfDark;
+	int m_aiRefSize[2];
+private:
+	int mGetFileType(char* pcRefFile);
+	void mClearGain(void);
+	void mClearDark(void);
+	//-----------------
+	void mLoadGainMrc(char* pcMrcFile);
+	void mLoadGainTiff(char* pcTiffFile);
+	//-----------------
+	void mRotate(float* gfRef, int* piRefSize, int iRotFact);
+	void mFlip(float* gfRef, int* piRefSize, int iFlip);
+	void mInverse(float* gfRef, int* piRefSize, int iInverse);
+	//-----------------
+	float* mToFloat(void* pvRef, int iMode, int* piSize);
+	void mCheckDarkRef(void);
+	float* mAugmentRef(float* pfRef, int iFact);
+	CLoadRefs(void);
+	//-----------------
+	int m_aiDarkSize[2];
+	bool m_bAugmented;
+        //-----------------
+	static CLoadRefs* m_pInstance;
 };
 
 class CProcessThread : public Util_Thread

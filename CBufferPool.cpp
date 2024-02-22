@@ -124,8 +124,11 @@ void CBufferPool::AdjustBuffer(int iNumFrames)
 	//-----------------
 	m_pFrmBuffer->Adjust(iNumFrames);
 	m_pXcfBuffer->Adjust(iNumFrames);
-	m_pPatBuffer->Adjust(iNumFrames);
-
+	//-----------------------------------------------
+	// 1) m_pPatBuffer will be NULL if pat align
+	// is not specified. Check NULL first
+	//-----------------------------------------------
+	if(m_pPatBuffer != 0L) m_pPatBuffer->Adjust(iNumFrames);
 }
 
 CStackBuffer* CBufferPool::GetBuffer(EBuffer eBuf)
@@ -187,9 +190,9 @@ void CBufferPool::mCreateSumBuffer(void)
         if(pAlnParam->SplitSum()) m_iNumSums += 2;
 	//-----------------
 	bool bSimpleSum = pAlnParam->SimpleSum();
-	if(DU::CFmIntegrateParam::DoseWeight() && !bSimpleSum)
+	if(DU::CFmIntParam::bDoseWeight() && !bSimpleSum)
 	{	m_iNumSums += 1;
-		if(DU::CFmIntegrateParam::DWSelectedSum()) m_iNumSums += 1;
+		if(DU::CFmIntParam::bDWSelectedSum()) m_iNumSums += 1;
 	}
 	//-----------------
 	int aiCmpSize[] = {m_aiStkSize[0] / 2 + 1, m_aiStkSize[1]};

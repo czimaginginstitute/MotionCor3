@@ -1,10 +1,10 @@
 PRJHOME = $(shell pwd)
 CONDA = $(HOME)/miniconda3
-CUDAHOME = $(HOME)/nvidia/cuda-10.2
+CUDAHOME = $(HOME)/nvidia/cuda-10.1
 CUDAINC = $(CUDAHOME)/include
 CUDALIB = $(CUDAHOME)/lib64
-PRJINC = $(PRJHOME)/Include
-PRJLIB = $(PRJHOME)/Lib
+PRJINC = $(PRJHOME)/LibSrc/Include
+PRJLIB = $(PRJHOME)/LibSrc/Lib
 #-----------------------------
 CUSRCS = ./Util/GAddFrames.cu \
 	./Util/GCalcMoment2D.cu \
@@ -65,7 +65,7 @@ SRCS = ./Util/CCufft2D.cpp \
 	./DataUtil/CMrcStack.cpp \
 	./DataUtil/CAlnSums.cpp \
 	./DataUtil/CReadFmIntFile.cpp \
-	./DataUtil/CFmIntegrateParam.cpp \
+	./DataUtil/CFmIntParam.cpp \
 	./DataUtil/CFmGroupParam.cpp \
 	./DataUtil/CDataPackage.cpp \
 	./DataUtil/CStackFolder.cpp \
@@ -102,7 +102,6 @@ SRCS = ./Util/CCufft2D.cpp \
 	./MrcUtil/CAnalyzeMrc.cpp \
 	./MrcUtil/CApplyRefs.cpp \
 	./MrcUtil/CAsyncSingleSave.cpp \
-	./MrcUtil/CLoadRefs.cpp \
 	./MrcUtil/CLoadCryoEMStack.cpp \
 	./MrcUtil/CLoadStack.cpp \
 	./MrcUtil/CSaveSingleCryoEM.cpp \
@@ -118,7 +117,6 @@ SRCS = ./Util/CCufft2D.cpp \
 	./EerUtil/CLoadEerMain.cpp \
 	./FindCtf/CCtfTheory.cpp \
 	./FindCtf/CGenAvgSpectrum.cpp \
-	./FindCtf/CFullSpectrum.cpp \
 	./FindCtf/CFindCtfBase.cpp \
 	./FindCtf/CFindCtf1D.cpp \
 	./FindCtf/CFindCtf2D.cpp \
@@ -130,6 +128,7 @@ SRCS = ./Util/CCufft2D.cpp \
 	./CGpuBuffer.cpp \
 	./CStackBuffer.cpp \
 	./CBufferPool.cpp \
+	./CLoadRefs.cpp \
 	./CCheckFreeGpus.cpp \
 	./CProcessThread.cpp \
 	./CSaveSerialCryoEM.cpp \
@@ -143,20 +142,20 @@ CC = g++ -std=c++11
 CFLAG = -c -g -pthread -m64
 NVCC = $(CUDAHOME)/bin/nvcc -std=c++11
 CUFLAG = -Xptxas -dlcm=ca -O2 \
-	-gencode arch=compute_52,code=sm_52 \
-	-gencode arch=compute_53,code=sm_53 \
-	-gencode arch=compute_60,code=sm_60 \
-	-gencode arch=compute_61,code=sm_61 \
+	-gencode arch=compute_75,code=sm_75 \
 	-gencode arch=compute_70,code=sm_70 \
-	-gencode arch=compute_70,code=sm_75
-#--------------------------------------------
+	-gencode arch=compute_52,code=sm_52 \
+        -gencode arch=compute_53,code=sm_53 \
+        -gencode arch=compute_60,code=sm_60 \
+        -gencode arch=compute_61,code=sm_61 
+#------------------------------------------
 cuda: $(CUCPPS)
 
 compile: $(OBJS)
 
 exe: $(OBJS)
 	@$(NVCC) -g -G -m64 $(OBJS) \
-	$(PRJLIB)/libmrcfile.a $(PRJLIB)/libutil.a $(PRJLIB)/libcuutil.a \
+	$(PRJLIB)/libmrcfile.a $(PRJLIB)/libutil.a \
 	-L$(CUDALIB) \
 	-L$(CONDA)/lib \
 	-L/usr/lib64 \

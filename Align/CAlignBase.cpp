@@ -61,7 +61,7 @@ void CAlignBase::mCreateAlnSums(void)
 	CBufferPool* pBufferPool = CBufferPool::GetInstance();
 	int iNumSums = pBufferPool->m_iNumSums;
 	int aiStkSize[] = {m_aiImgSize[0], m_aiImgSize[1], iNumSums};
-	//-----------------------------------------------------------
+	//-----------------
 	bool bCreatePkg = true;
 	if(m_pPackage->m_pAlnSums != 0L)
 	{	int* piOldSize = m_pPackage->m_pAlnSums->m_aiStkSize;
@@ -69,7 +69,7 @@ void CAlignBase::mCreateAlnSums(void)
 		   piOldSize[1] == m_aiImgSize[1] &&
 		   piOldSize[2] == iNumSums) return;
 	}
-	//------------------------------------------
+	//-----------------
 	if(m_pPackage->m_pAlnSums != 0L)
 	{	delete m_pPackage->m_pAlnSums;
 		m_pPackage->m_pAlnSums = 0L;
@@ -77,11 +77,11 @@ void CAlignBase::mCreateAlnSums(void)
 	DU::CAlnSums* pAlnSums = new DU::CAlnSums;
 	pAlnSums->Create(Mrc::eMrcFloat, aiStkSize);
 	m_pPackage->m_pAlnSums = pAlnSums;
-	//--------------------------------	
-	DU::CFmIntegrateParam* pFmIntParam = m_pPackage->m_pFmIntParam;
-	pAlnSums->Setup(pFmIntParam->DoseWeight(),
-	   pFmIntParam->DWSelectedSum());
-	//-------------------------------
+	//-----------------	
+	DU::CFmIntParam* pFmIntParam = m_pPackage->m_pFmIntParam;
+	pAlnSums->Setup(pFmIntParam->bDoseWeight(),
+	   pFmIntParam->bDWSelectedSum());
+	//-----------------
 	CInput* pInput = CInput::GetInstance();
 	pAlnSums->m_fPixSize = pInput->GetFinalPixelSize();
 }
@@ -90,12 +90,12 @@ void CAlignBase::mCreateAlnStack(void)
 {
 	CInput* pInput = CInput::GetInstance();
 	if(pInput->m_aiOutStack[0] == 0) return;
-	//--------------------------------------
+	//-----------------
 	CBufferPool* pBufferPool = CBufferPool::GetInstance();
 	CStackBuffer* pFrmBuffer = pBufferPool->GetBuffer(EBuffer::frm);
 	int iNumFrames = pFrmBuffer->m_iNumFrames;
 	int aiStkSize[] = {m_aiImgSize[0], m_aiImgSize[1], iNumFrames};
-	//-------------------------------------------------------------
+	//-----------------
 	DataUtil::CMrcStack* pAlnStack = new DataUtil::CMrcStack;
 	pAlnStack->Create(Mrc::eMrcFloat, aiStkSize);
 	pAlnStack->m_fPixSize = pInput->GetFinalPixelSize();

@@ -116,7 +116,7 @@ private:
 	CEntry** m_ppEntries;
 	static CReadFmIntFile* m_pInstance;
 };
-
+/*
 class CFmIntegrateParam
 {
 public:
@@ -151,13 +151,53 @@ private:
         int m_iNumRawFms;   // All frames in the input movie file
         int m_iMrcMode;
 };
+*/
+
+class CFmIntParam
+{
+public:
+	CFmIntParam(void);
+	~CFmIntParam(void);
+	void Setup(int iNumRawFms, int iMrcMode);
+	//-----------------
+	int GetIntFmStart(int iIntFrame);
+	int GetIntFmSize(int iIntFrame);
+	int GetNumIntFrames(void);
+	float GetAccruedDose(int iIntFrame);
+	float GetTotalDose(void);
+	//-----------------
+	static bool bIntegrate(void);
+	static bool bDoseWeight(void);
+	static bool bDWSelectedSum(void);
+	bool bInSumRange(int iIntFrame);
+	CFmIntParam* GetCopy(void);
+	//-----------------
+	int m_iNumIntFms;
+	float* m_pfIntFmDose;  // dose of each int frame
+	float* m_pfAccFmDose;  // accumulated dose of each int frame
+	float* m_pfIntFmCents; // pseduo-time stamp of each int frame
+private:
+	void mSetup(void);          // no frame integration
+	void mCalcIntFms(void);     // yes frame integration
+	void mThrowIntFrames(void);
+	void mClean(void);
+	void mAllocate(void);
+	void mCalcIntFmCenters(void);
+	void mDisplay(void);
+	//-----------------
+	int* m_piIntFmStart;
+	int* m_piIntFmSize;
+	//-----------------
+	int m_iNumRawFms;
+	int m_iMrcMode;
+};
 
 class CFmGroupParam
 {
 public:
         CFmGroupParam(void);
 	~CFmGroupParam(void);
-	void Setup(int iBinZ, CFmIntegrateParam* pFmIntParam);
+	void Setup(int iBinZ, CFmIntParam* pFmIntParam);
         int GetGroupStart(int iGroup);
         int GetGroupSize(int iGroup);
         float GetGroupCenter(int iGroup);
@@ -167,8 +207,8 @@ public:
 	bool m_bGrouping;
 	int m_iBinZ;
 private:
-        void mGroupByRawSize(CFmIntegrateParam* pFmIntParam);
-        void mGroupByDose(CFmIntegrateParam* pFmIntParam);
+        void mGroupByRawSize(CFmIntParam* pFmIntParam);
+        void mGroupByDose(CFmIntParam* pFmIntParam);
         CFmGroupParam* mGetCopy(void);
         void mClean(void);
         void mAllocate(void);
@@ -218,7 +258,7 @@ public:
 	CMrcStack* m_pAlnStack;
 	CAlnSums* m_pAlnSums;
 	CMrcStack* m_pCtfStack;
-	CFmIntegrateParam* m_pFmIntParam;
+	CFmIntParam* m_pFmIntParam;
 	CFmGroupParam* m_pFmGroupParams;
 	void* m_pvCtfParam;
 	//------------------------------
@@ -245,12 +285,16 @@ private:
         bool mOpenDir(void);
         int mReadFolder(bool bFirstTime);
         bool mAsyncReadFolder(void);
-        char* mGetSerial(char* pcInputFile);
-        char* mGetInPrefix(void);
-        void mClean(void);
+	char* mGetSerial(char* pcInputFile);
+	char* mGetInPrefix(void);
+	bool mCheckSkips(const char* pcString);
+	void mClean(void);
+	//-----------------
         char m_acDirName[256];
-        char m_acPrefix[256];
-        char m_acSuffix[256];
+	char m_acPrefix[256];
+	char m_acSuffix[256];
+	char m_acSkips[256];
+	//-----------------
 	std::queue<CDataPackage*> m_aFileQueue;
         int m_ifd;
         int m_iwd;

@@ -94,9 +94,11 @@ bool CStackFolder::ReadFiles(void)
 	bSuccess = mGetDirName();
 	if(!bSuccess) return false;
 	strcpy(m_acSuffix, pInput->m_acInSuffix);
+	strcpy(m_acSkips, pInput->m_acInSkips);
 	printf("Directory: %s\n", m_acDirName);
 	printf("Prefix:    %s\n", m_acPrefix);
 	printf("Suffix:    %s\n", m_acSuffix);
+	printf("Skips:     %s\n", m_acSkips);
 	//-------------------------------------------------
 	// Read all the movies in the specified folder for
 	// batch processing.
@@ -150,28 +152,34 @@ int CStackFolder::mReadFolder(bool bFirstTime)
 	int iNumRead = 0;
 	int iPrefix = strlen(m_acPrefix);
 	int iSuffix = strlen(m_acSuffix);
+	int iSkips = strlen(m_acSkips);
 	struct dirent* pDirent;
 	char *pcPrefix = 0L, *pcSuffix = 0L;
-	//----------------------------------
+	//-----------------
 	struct stat statBuf;
 	char acFullFile[256] = {'\0'};
 	strcpy(acFullFile, m_acDirName);
 	char* pcMainFile = acFullFile + strlen(m_acDirName);
-	//--------------------------------------------------
+	//-----------------
 	while(true)
 	{	pDirent = readdir(pDir);
 		if(pDirent == 0L) break;
 		if(pDirent->d_name[0] == '.') continue;
-		//-------------------------------------
+		//----------------
 		if(iPrefix > 0)
 		{	pcPrefix = strstr(pDirent->d_name, m_acPrefix);
 			if(pcPrefix == 0L) continue;
 		}
-		//----------------------------------
+		//----------------
 		if(iSuffix > 0)
 		{	pcSuffix = strcasestr(pDirent->d_name 
 			   + iPrefix, m_acSuffix);
 			if(pcSuffix == 0L) continue;
+		}
+		//----------------
+		if(iSkips > 0)
+		{	bool bSkip = mCheckSkips(pDirent->d_name);
+			if(bSkip) continue;
 		}
 		//----------------------------------
 		// check if this is the latest file
@@ -250,6 +258,19 @@ bool CStackFolder::mGetDirName(void)
 	int iBytes = strlen(pcPrefix) - iNumChars;
 	if(iBytes > 0) memcpy(m_acPrefix, pcSlash + 1, iBytes);
 	return true;
+}
+
+bool CStackFolder::mCheckSkips(const char* pcString)
+{
+	char acBuf[256] = {'\0'};
+	strcpy(acBuf, m_acSkips);
+	//-----------------
+	char* pcToken = strtok(acBuf, ", ");
+	while(pcToken != 0L)
+	{	if(strstr(pcString, pcToken) != 0L) return true;
+		pcToken = strtok(0L, ", ");
+	}
+	return false;
 }
 
 void CStackFolder::mClean(void)

@@ -48,8 +48,8 @@ static __global__ void mGLogrithm
 static __global__ void mGenFullSpect
 (	float* gfHalfSpect,
 	float* gfFullSpect,
-	int iHalfX,
-	int iCmpY
+	int iHalfX, int iCmpY,
+	int iFullSizeX
 )
 {	int xSrc, ySrc, xDst, yDst;
 	yDst = blockIdx.y * blockDim.y + threadIdx.y;
@@ -64,7 +64,7 @@ static __global__ void mGenFullSpect
 	{	xSrc = -xDst;
 		ySrc = iCmpY - yDst;
 	}
-	gfFullSpect[yDst * gridDim.x + blockIdx.x] = 
+	gfFullSpect[yDst * iFullSizeX + blockIdx.x] = 
 	   gfHalfSpect[ySrc * (iHalfX + 1) + xSrc];
 }
 
@@ -120,15 +120,17 @@ void GCalcSpectrum::Logrithm
 void GCalcSpectrum::GenFullSpect
 (	float* gfHalfSpect, 
 	int* piCmpSize,
-        float* gfFullSpect
+	float* gfFullSpect,
+	bool bFullPadded
 )
 {	int iHalfX = piCmpSize[0] - 1;
 	int iNx = iHalfX * 2;
+	int iFullSizeX = bFullPadded ? iNx + 2 : iNx;
 	//-------------------
 	dim3 aBlockDim(1, 512);
 	dim3 aGridDim(iNx, 1);
 	aGridDim.y = (piCmpSize[1] + aBlockDim.y - 1) / aBlockDim.y;
 	//----------------------------------------------------------
 	mGenFullSpect<<<aGridDim, aBlockDim>>>(gfHalfSpect,
-	   gfFullSpect, iHalfX, piCmpSize[1]);
+	   gfFullSpect, iHalfX, piCmpSize[1], iFullSizeX);
 }	

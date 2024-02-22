@@ -108,19 +108,19 @@ void CProcessThread::mProcess(void)
 
 bool CProcessThread::mCheckGain(void)
 {
-	MU::CLoadRefs* pLoadRefs = MU::CLoadRefs::GetInstance();
+	CLoadRefs* pLoadRefs = CLoadRefs::GetInstance();
 	if(pLoadRefs->m_pfGain == 0L)
 	{	printf("Warning: Gain ref not found.\n"
 		   "......   Gain correction will be skipped.\n\n");
 		return true;
 	}
-	//------------------
+	//-----------------
 	DU::CDataPackage* pPackage = (DU::CDataPackage*)m_pvPackage;
 	if(pLoadRefs->m_aiRefSize[0] == pPackage->m_pRawStack->m_aiStkSize[0]
         && pLoadRefs->m_aiRefSize[1] == pPackage->m_pRawStack->m_aiStkSize[1])
 	{	return true;
 	}
-	//------------------
+	//-----------------
 	fprintf(stderr,
 	   "Error: Gain and frame dimensions mismatch!\n"
 	   "...... Gain size:  %d  %d\n"
@@ -129,7 +129,7 @@ bool CProcessThread::mCheckGain(void)
 	   pLoadRefs->m_aiRefSize[0], pLoadRefs->m_aiRefSize[1],
 	   pPackage->m_pRawStack->m_aiStkSize[0], 
 	   pPackage->m_pRawStack->m_aiStkSize[1]);
-	//----------------------------------------
+	//-----------------
 	return false;
 }
 
@@ -137,7 +137,7 @@ void CProcessThread::mApplyRefs(void)
 {
 	Util_Time aTimer; aTimer.Measure();
 	//---------------------------------
-	MU::CLoadRefs* pLoadRefs = MU::CLoadRefs::GetInstance();
+	CLoadRefs* pLoadRefs = CLoadRefs::GetInstance();
 	DU::CDataPackage* pPackage = (DU::CDataPackage*)m_pvPackage;
 	//----------------------------------------------------------
 	MU::CApplyRefs applyRefs;

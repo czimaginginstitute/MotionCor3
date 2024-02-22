@@ -28,6 +28,7 @@ CInput::CInput(void)
 	strcpy(m_acInTifTag, "-InTiff");
 	strcpy(m_acInEerTag, "-InEer");
 	strcpy(m_acInSuffixTag, "-InSuffix");
+	strcpy(m_acInSkipsTag, "-InSkips");
 	strcpy(m_acOutMrcTag, "-OutMrc");
 	strcpy(m_acArchiveTag, "-ArcDir");
 	strcpy(m_acGainMrcTag, "-Gain");
@@ -146,17 +147,22 @@ void CInput::ShowTags(void)
 	printf("%-15s\n"
 	   "  1. Input TIFF file that stores a dose fractionated stack.\n",
            m_acInTifTag);
-	//---------------
+	//-----------------
 	printf("%-15s\n"
 	   " 1. Input EER file that stores a dose fractionated stack.\n",
 	   m_acInEerTag);
-	//---------------
+	//-----------------
+	printf("%-15s\n"
+	   "  1. Used in combination with %s, skip the input files whose\n"
+	   "     names contain the strings specied here.\n",
+	   m_acInSkipsTag, m_acSerialTag);
+	//-----------------
 	printf("%-15s\n"
 	   "  1. Output MRC file that stores the frame sum.\n"
 	   "  2. It can be either a MRC file name or the prefix of a series\n"
 	   "     MRC files when %s option is turned on.\n\n",
 	   m_acOutMrcTag, m_acSerialTag);
-	//-------------------------------
+	//-----------------
 	printf
 	(  "%-15s\n"
 	   " 1. Path of the archive folder that holds the archived raw\n"
@@ -410,13 +416,17 @@ void CInput::Parse(int argc, char* argv[])
 {
 	m_argc = argc;
 	m_argv = argv;
-	//------------
+	//-----------------
 	memset(m_acInMrcFile, 0, sizeof(m_acInMrcFile));
 	memset(m_acInTifFile, 0, sizeof(m_acInTifFile));
 	memset(m_acInEerFile, 0, sizeof(m_acInEerFile));
+	//-----------------
 	memset(m_acInSuffix, 0, sizeof(m_acInSuffix));
+	memset(m_acInSkips, 0, sizeof(m_acInSkips));
+	//-----------------
 	memset(m_acGainMrc, 0, sizeof(m_acGainMrc));
 	memset(m_acDarkMrc, 0, sizeof(m_acDarkMrc));
+	//-----------------
 	memset(m_acOutMrcFile, 0, sizeof(m_acOutMrcFile));
 	memset(m_acArchiveFolder, 0, sizeof(m_acArchiveFolder));
 	memset(m_acDefectFile, 0, sizeof(m_acDefectFile));
@@ -427,28 +437,31 @@ void CInput::Parse(int argc, char* argv[])
 	memset(m_acTmpFile, 0, sizeof(m_acTmpFile));
 	memset(m_acLogDir, 0, sizeof(m_acLogDir));
 	memset(m_acFmIntFile, 0, sizeof(m_acFmIntFile));
-	//----------------------------------------------
+	//-----------------
 	int aiRange[2];
 	Util::CParseArgs aParseArgs;
 	aParseArgs.Set(argc, argv);
 	aParseArgs.FindVals(m_acInMrcTag, aiRange);
 	aParseArgs.GetVal(aiRange[0], m_acInMrcFile);
-	//-------------------------------------------
+	//-----------------
 	aParseArgs.FindVals(m_acInTifTag, aiRange);
 	aParseArgs.GetVal(aiRange[0], m_acInTifFile);
-	//-------------------------------------------
+	//-----------------
 	aParseArgs.FindVals(m_acInEerTag, aiRange);
 	aParseArgs.GetVal(aiRange[0], m_acInEerFile);
-	//-------------------------------------------
+	//-----------------
 	aParseArgs.FindVals(m_acInSuffixTag, aiRange);
 	aParseArgs.GetVal(aiRange[0], m_acInSuffix);
-	//------------------------------------------
+	//-----------------
+	aParseArgs.FindVals(m_acInSkipsTag, aiRange);
+	aParseArgs.GetVal(aiRange[0], m_acInSkips);
+	//-----------------
 	aParseArgs.FindVals(m_acOutMrcTag, aiRange);
 	aParseArgs.GetVal(aiRange[0], m_acOutMrcFile);
-	//--------------------------------------------
+	//-----------------
 	aParseArgs.FindVals(m_acFmIntFileTag, aiRange);
 	aParseArgs.GetVal(aiRange[0], m_acFmIntFile);
-	//-------------------------------------------
+	//-----------------
 	aParseArgs.FindVals(m_acArchiveTag, aiRange);
 	aParseArgs.GetVal(aiRange[0], m_acArchiveFolder);
 	//-----------------------------------------------
@@ -715,7 +728,10 @@ void CInput::mPrint(void)
 	printf("%-15s  %s\n", m_acInMrcTag, m_acInMrcFile);
 	printf("%-15s  %s\n", m_acInTifTag, m_acInTifFile);
 	printf("%-15s  %s\n", m_acInEerTag, m_acInEerFile);
+	//-----------------
 	printf("%-15s  %s\n", m_acInSuffixTag, m_acInSuffix);
+	printf("%-15s  %s\n", m_acInSkipsTag, m_acInSkips);
+	//-----------------
 	printf("%-15s  %s\n", m_acOutMrcTag, m_acOutMrcFile);
 	printf("%-15s  %s\n", m_acFmIntFileTag, m_acFmIntFile);
 	printf("%-15s  %s\n", m_acArchiveTag, m_acArchiveFolder);

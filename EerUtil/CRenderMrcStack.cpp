@@ -29,7 +29,7 @@ void CRenderMrcStack::DoIt
 	   m_pLoadEerHeader->m_iEerSampling);
 	//-----------------------------------
 	DU::CDataPackage* pPackage = (DU::CDataPackage*)pvDataPackage;
-	if(pPackage->m_pFmIntParam->NeedIntegrate()) 
+	if(pPackage->m_pFmIntParam->bIntegrate()) 
 	{	mRenderInt(pvDataPackage);
 	}
 	else mRender(pvDataPackage);
@@ -53,7 +53,7 @@ void CRenderMrcStack::mRenderInt(void* pvDataPackage)
 {
 	DU::CDataPackage* pPackage = (DU::CDataPackage*)pvDataPackage;
 	DU::CMrcStack* pRawStack = pPackage->m_pRawStack;
-	DU::CFmIntegrateParam* pFmIntParam = pPackage->m_pFmIntParam;
+	DU::CFmIntParam* pFmIntParam = pPackage->m_pFmIntParam;
 	//-----------------------------------------------------------------
 	for(int i=0; i<pRawStack->m_aiStkSize[2]; i++)
 	{	int iFmSize = pFmIntParam->GetIntFmSize(i);
@@ -71,7 +71,7 @@ void CRenderMrcStack::mRenderFrame(int iIntFrm, void* pvDataPackage)
 {
 	DU::CDataPackage* pPackage = (DU::CDataPackage*)pvDataPackage;
 	DU::CMrcStack* pRawStack = pPackage->m_pRawStack;
-	DU::CFmIntegrateParam* pFmIntParam = pPackage->m_pFmIntParam;
+	DU::CFmIntParam* pFmIntParam = pPackage->m_pFmIntParam;
 	//-----------------------------------------------------------
 	int iIntFmStart = pFmIntParam->GetIntFmStart(iIntFrm);
 	int iIntFmSize = pFmIntParam->GetIntFmSize(iIntFrm);

@@ -20,7 +20,7 @@ static CLoadEerMain* s_pLoadEerMain = 0L;
 //-------------------------------------------------
 static DataUtil::CStackFolder* s_pStackFolder = 0L;
 static DataUtil::CDataPackage* s_pPackage = 0L;
-static DataUtil::CFmIntegrateParam* s_pFmIntParam = 0L;
+static DataUtil::CFmIntParam* s_pFmIntParam = 0L;
 
 static void sCloseFile(void)
 {
@@ -52,7 +52,7 @@ bool CLoadEerMain::OpenFile(int aiStkSize[3])
 	bool bPop = true, bClean = true;
 	s_pStackFolder = DataUtil::CStackFolder::GetInstance();
 	s_pPackage = s_pStackFolder->GetPackage(bPop);
-	//--------------------------------------------
+	//-----------------
 	s_iFile = open(s_pPackage->m_pcInFileName, O_RDONLY);
 	if(s_iFile == -1)
 	{	fprintf(stderr, "Error: Unable to open EER file, skip.\n"
@@ -60,10 +60,11 @@ bool CLoadEerMain::OpenFile(int aiStkSize[3])
 		sCleanPackage(); 
 		return false;
 	}
-	//--------------------------------------------------
+	//-----------------
 	lseek64(s_iFile, 0, SEEK_SET);
 	s_pTiff = TIFFFdOpen(s_iFile, "\0", "r");
-	//---------------------------------------
+	if(s_pTiff == 0L) return false;
+	//-----------------
 	CInput* pInput = CInput::GetInstance();
 	CLoadEerHeader aLoadEerHeader;
 	bool bSuccess = aLoadEerHeader.DoIt(s_pTiff, pInput->m_iEerSampling);
@@ -77,13 +78,13 @@ bool CLoadEerMain::OpenFile(int aiStkSize[3])
 	// new package and we need to create one.
 	//------------------------------------------------------------------
 	if(s_pPackage->m_pFmIntParam == 0L)
-	{	s_pPackage->m_pFmIntParam = new DataUtil::CFmIntegrateParam;
+	{	s_pPackage->m_pFmIntParam = new DataUtil::CFmIntParam;
 	}
 	s_pPackage->m_pFmIntParam->Setup
 	( aLoadEerHeader.m_iNumFrames, Mrc::eMrcUChar
 	);
 	delete s_pPackage->m_pFmIntParam;
-	s_pPackage->m_pFmIntParam = new DataUtil::CFmIntegrateParam;
+	s_pPackage->m_pFmIntParam = new DataUtil::CFmIntParam;
 	s_pPackage->m_pFmIntParam->Setup
         ( aLoadEerHeader.m_iNumFrames, Mrc::eMrcUChar
         );
@@ -102,7 +103,7 @@ bool CLoadEerMain::OpenFile(int aiStkSize[3])
 	//---------------------------------------------------------------
 	memcpy(s_aiStkSize, aLoadEerHeader.m_aiFrmSize, sizeof(int) * 2);
 	s_aiStkSize[2] = s_pPackage->m_pFmIntParam->GetNumIntFrames();
-	//--------------------------------------------------------------
+	//-----------------
 	printf("EER stack: %d  %d  %d\nRendered stack: %d  %d  %d\n\n", 
 	   aLoadEerHeader.m_aiCamSize[0], aLoadEerHeader.m_aiCamSize[1], 
 	   aLoadEerHeader.m_iNumFrames, s_aiStkSize[0],

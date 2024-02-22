@@ -101,9 +101,7 @@ void CGpuBuffer::AdjustBuffer(int iNumFrames)
 	// GPU frame buffer, then simply update GPU frame numbers. 
 	//-----------------------------------------------------------
 	if(iNumFrames <= m_iMaxGpuFrms)
-	{	if (iNumFrames < m_iMaxGpuFrms) 
-		{	m_iNumGpuFrames = iNumFrames;
-		}
+	{	m_iNumGpuFrames = iNumFrames;
 		m_iNumFrames = iNumFrames;
 		return;
 	}
@@ -157,8 +155,9 @@ void CGpuBuffer::mCalcGpuFrames(void)
 
 void CGpuBuffer::mCreateCpuBuf(int iNumFrms)
 {
+	if(iNumFrms <= 0) return;
 	if(iNumFrms <= m_iMaxCpuFrms) return;
-	//-----------------------------------
+	//-----------------
 	void** ppvFrames = new void*[iNumFrms];
 	for(int i=0; i<m_iMaxCpuFrms; i++)
 	{	ppvFrames[i] = m_ppvCpuFrames[i];

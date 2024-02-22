@@ -23,7 +23,7 @@ CFmGroupParam::~CFmGroupParam(void)
 	this->mClean();
 }
 
-void CFmGroupParam::Setup(int iBinZ, CFmIntegrateParam* pFmIntParam)
+void CFmGroupParam::Setup(int iBinZ, CFmIntParam* pFmIntParam)
 {
 	if(m_iNumIntFms == pFmIntParam->m_iNumIntFms 
 	   && m_iBinZ == iBinZ) return;
@@ -82,7 +82,7 @@ void CFmGroupParam::Setup(int iBinZ, CFmIntegrateParam* pFmIntParam)
 	*/
 }
 
-void CFmGroupParam::mGroupByRawSize(CFmIntegrateParam* pFmIntParam)
+void CFmGroupParam::mGroupByRawSize(CFmIntParam* pFmIntParam)
 {
 	m_iNumGroups = 0;
 	int iIntFm = 0;
@@ -101,7 +101,7 @@ void CFmGroupParam::mGroupByRawSize(CFmIntegrateParam* pFmIntParam)
 	}
 }
 
-void CFmGroupParam::mGroupByDose(CFmIntegrateParam* pFmIntParam)
+void CFmGroupParam::mGroupByDose(CFmIntParam* pFmIntParam)
 {
 	float fMinDose = pFmIntParam->m_pfIntFmDose[0];
 	for(int i=1; i<m_iNumIntFms; i++)

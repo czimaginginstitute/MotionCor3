@@ -1,5 +1,4 @@
 #include "CFindCtfInc.h"
-#include <CuUtilFFT/GFFT2D.h>
 #include <cuda.h>
 #include <cuda_runtime.h>
 
@@ -47,17 +46,14 @@ static __global__ void mGCalculate
 // 5. The DC is at (iNx/2, iNy/2)
 //------------------------------------------------------------------------------
 static __global__ void mGEmbedCtf
-(	float* gfCtf2D,
-	int iCmpY,
-	float fMinFreq,
-	float fMaxFreq,
-	float fMean,
-	float fGain,
-	float* gfFullSpect
+(	float* gfCtf2D, int iCmpY,
+	float fMinFreq, float fMaxFreq,
+	float fMean, float fGain,
+	float* gfFullSpect, int iFullSpectX
 )
 {	int y = blockIdx.y * blockDim.y + threadIdx.y;
 	if(y >= iCmpY) return;
-	//--------------------
+	//-----------------
 	float fY = (y - iCmpY * 0.5f) / iCmpY;
 	float fX = (blockIdx.x - (float)gridDim.x) * 0.5f / gridDim.x;
 	fX = sqrtf(fX * fX + fY * fY);
@@ -73,7 +69,7 @@ static __global__ void mGEmbedCtf
 	// Therefore, there is a (gridDim.x = iNx / 2) offset in
 	// the horizontal axis.
 	//--------------------------------------------------------
-	gfFullSpect[y * (gridDim.x * 2) + blockIdx.x] = fY;
+	gfFullSpect[y * iFullSpectX + blockIdx.x] = fY;
 }
 
 GCalcCTF2D::GCalcCTF2D(void)
@@ -90,7 +86,7 @@ void GCalcCTF2D::SetParam(CCtfParam* pCtfParam)
 	afCtfParam[0] = pCtfParam->m_fWaveLen;
 	afCtfParam[1] = pCtfParam->m_fCs;
 	cudaMemcpyToSymbol(s_gfCtfParam, afCtfParam, sizeof(float) * 2);
-	//--------------------------------------------------------------
+	//-----------------
 	m_fAmpPhase = pCtfParam->m_fAmpPhaseShift;
 }
 
@@ -101,11 +97,11 @@ void GCalcCTF2D::DoIt
 )
 {	float fDfMean = 0.5f * (fDfMin + fDfMax);
 	float fDfSigma = 0.5f * (fDfMax - fDfMin);
-	//----------------------------------------
+	//-----------------
 	dim3 aBlockDim(1, 512);
 	dim3 aGridDim(piCmpSize[0], 1);
 	aGridDim.y = (piCmpSize[1] + aBlockDim.y - 1) / aBlockDim.y;
-	//----------------------------------------------------------
+	//-----------------
 	float fAddPhase = m_fAmpPhase + fExtPhase;
 	mGCalculate<<<aGridDim, aBlockDim>>>(fDfMean, fDfSigma, fAzimuth,
 	   fAddPhase, gfCTF2D, piCmpSize[1]);
@@ -120,16 +116,20 @@ void GCalcCTF2D::DoIt(CCtfParam* pCtfParam, float* gfCtf2D, int* piCmpSize)
 }
 
 void GCalcCTF2D::EmbedCtf
-(	float* gfCtf2D, 
+(	float* gfCtf2D, int* piCmpSize, 
 	float fMinFreq, float fMaxFreq,
 	float fMean, float fGain, 
-	float* gfFullSpect, int* piCmpSize
+	float* gfFullSpect, bool bPadded
 )
 {	int iHalfX = piCmpSize[0] - 1;
+	int iFullSpectX = iHalfX * 2;
+	if(bPadded) iFullSpectX = piCmpSize[0] * 2;
+	//-----------------
 	dim3 aBlockDim(1, 512);
 	dim3 aGridDim(iHalfX, 1);
 	aGridDim.y = (piCmpSize[1] + aBlockDim.y - 1) / aBlockDim.y;
-	//----------------------------------------------------------
+	//-----------------
 	mGEmbedCtf<<<aGridDim, aBlockDim>>>(gfCtf2D, piCmpSize[1],
-	   fMinFreq, fMaxFreq, fMean, fGain, gfFullSpect);
+	   fMinFreq, fMaxFreq, fMean, fGain, 
+	   gfFullSpect, iFullSpectX);
 }
