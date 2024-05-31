@@ -156,6 +156,7 @@ compile: $(OBJS)
 exe: $(OBJS)
 	@$(NVCC) -g -G -m64 $(OBJS) \
 	$(PRJLIB)/libmrcfile.a $(PRJLIB)/libutil.a \
+	-Xlinker -no-pie \
 	-L$(CUDALIB) \
 	-L$(CONDA)/lib \
 	-L/usr/lib64 \
