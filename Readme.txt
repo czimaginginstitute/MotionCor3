@@ -938,3 +938,12 @@ MotionCor3_1.1.1 [02-18-2024]
         m_iNumFrames = iNumFrames;
         return;
    }
+
+MotionCor3_1.1.2 [06-11-2024]
+-----------------------------
+1. Revised CCheckFreeGpus.cpp:
+   1) When -UseGpus is not present in command line, do not check. This
+      means all specified GPUs following -GPU will be used.
+   2) When -UseGpus specifies the same as or more GPUs than -Gpu provides,
+      do not check. This means all specified GPUs following -GPU will be used.
+   3) This is based on Github user request.

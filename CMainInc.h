@@ -146,12 +146,15 @@ private:
 class CCheckFreeGpus
 {
 public:
-	CCheckFreeGpus(void);
+	static CCheckFreeGpus* GetInstance(void);
+	static void DeleteInstance(void);
+	//-----------------
 	~CCheckFreeGpus(void);
 	void SetAllGpus(int* piGpuIds, int iNumGpus);
 	int GetFreeGpus(int* piFreeGpus, int iNumFreeGpus);
 	void FreeGpus(void);
 private:
+	CCheckFreeGpus(void);
 	void mClean(void);
 	int mOpenFile(void);
 	int mLockFile(int iFd);
@@ -159,11 +162,14 @@ private:
 	void mReadGpus(FILE* pFile);
 	void mWriteGpus(FILE* pFile);
 	bool mCheckActivePid(int iPid);
+	//-----------------
 	char m_acGpuFile[256];
 	int* m_piGpuIds;
 	int* m_piPids;
 	int m_iNumGpus;
 	int m_iPid;
+	//-----------------
+	static CCheckFreeGpus* m_pInstance;
 };
 
 class CGpuBuffer
