@@ -13,6 +13,7 @@ using namespace MotionCor2;
 bool mCheckSame(void);
 bool mCheckLoad(void);
 bool mCheckSave(char* pcMrcFile);
+bool mCheckFreeGpus(void);
 bool mCheckGPUs(void);
 void mCheckPeerAccess(void);
 
@@ -33,8 +34,8 @@ int main(int argc, char* argv[])
 	CInput* pInput = CInput::GetInstance();
 	if(argc == 2)
 	{	if(strcasecmp(argv[1], "--version") == 0)
-		{	printf("MotionCor3 version 1.1.1\n"
-			       "Built on Feb 21 2024\n");
+		{	printf("MotionCor3 version 1.1.2\n"
+			       "Built on Jun 11 2024\n");
 			return eSuccess;
 		}
 		if(strcasecmp(argv[1], "--help") == 0)
@@ -44,42 +45,65 @@ int main(int argc, char* argv[])
 		}
 	}
 	pInput->Parse(argc, argv);
-	//------------------------
-	CCheckFreeGpus checkFreeGpus;
-	checkFreeGpus.SetAllGpus(pInput->m_piGpuIds, pInput->m_iNumGpus);
-	int iFreeGpus = checkFreeGpus.GetFreeGpus
-	( pInput->m_piGpuIds, pInput->m_iUseGpus
-	);
-	if(iFreeGpus == 0)
-	{	fprintf(stderr, "Error: All GPUs are in use, quit.\n\n");
-		return eNoFreeGPUs;
-	}
-	if(iFreeGpus > 0) pInput->m_iNumGpus = iFreeGpus;	
-	//-----------------------------------------------
+	//-----------------
+	bool bHasFreeGpus = mCheckFreeGpus();
+	if(!mCheckFreeGpus()) return eNoFreeGPUs;
+	//-----------------
 	cuInit(0);
 	if(mCheckSame()) return eInputOutputSame;
-	//---------------------------------------
+	//-----------------
 	bool bLoad = mCheckLoad();
 	if(!bLoad) return eFailLoad;
-	//--------------------------
+	//-----------------
 	bool bSave = mCheckSave(pInput->m_acOutMrcFile);
 	if(!bSave) return eFailSave;
-	//--------------------------
+	//-----------------
 	bool bGpu = mCheckGPUs();
 	if(!bGpu) return eNoValidGPUs;
-	//----------------------------
+	//-----------------
 	Util_Time aTimer;
 	aTimer.Measure();
-	//mCheckPeerAccess(); //Disable due to 8-GPU box 09/22/2018
 	CMain aMain;
 	bool bSuccess = aMain.DoIt();
-	checkFreeGpus.FreeGpus();
-	//-----------------------
+	//-----------------
+	CCheckFreeGpus* pCheckFreeGpus = CCheckFreeGpus::GetInstance();
+	pCheckFreeGpus->FreeGpus();
+	CCheckFreeGpus::DeleteInstance();
+	//-----------------
 	nvtxRangePop();
 	float fSecs = aTimer.GetElapsedSeconds();
 	printf("Total time: %f sec\n", fSecs);
 	if(!bSuccess) return eFailProcess;
 	else return eSuccess;
+}
+
+//--------------------------------------------------------------------
+// 1. Do not check the free gpu file in /tmp folder if users do not
+//    activate -UseGpus option in command line.
+// 2. Do not check when users specifies all the GPUs using -UseGpus
+//    in command line.
+// 3. Check only when -UseGpus specifies less GPUs than the provided
+//    GPUs in the command line using -Gpu
+// 4. This is added per request from Github users.
+//--------------------------------------------------------------------
+bool mCheckFreeGpus(void)
+{
+	CInput* pInput = CInput::GetInstance();
+	if(pInput->m_iUseGpus >= pInput->m_iNumGpus) return true;
+	if(pInput->m_iUseGpus <= 0) return true;
+	//-----------------
+	CCheckFreeGpus* pCheckFreeGpus = CCheckFreeGpus::GetInstance();
+	pCheckFreeGpus->SetAllGpus(pInput->m_piGpuIds, pInput->m_iNumGpus);
+	int iFreeGpus = pCheckFreeGpus->GetFreeGpus(
+	   pInput->m_piGpuIds, pInput->m_iUseGpus);
+	//-----------------
+        if(iFreeGpus <= 0)
+        {       fprintf(stderr, "Error: All GPUs are in use, quit.\n\n");
+                return false;
+        }
+	//-----------------
+        pInput->m_iNumGpus = iFreeGpus;
+	return true;
 }
 
 bool mCheckSame(void)

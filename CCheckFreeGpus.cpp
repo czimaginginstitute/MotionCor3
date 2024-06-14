@@ -10,6 +10,22 @@
 
 using namespace MotionCor2;
 
+CCheckFreeGpus* CCheckFreeGpus::m_pInstance = 0L;
+
+CCheckFreeGpus* CCheckFreeGpus::GetInstance(void)
+{
+	if(m_pInstance != 0L) return m_pInstance;
+	m_pInstance = new CCheckFreeGpus;
+	return m_pInstance;
+}
+
+void CCheckFreeGpus::DeleteInstance(void)
+{
+	if(m_pInstance == 0L) return;
+	delete m_pInstance;
+	m_pInstance = 0L;
+}
+
 CCheckFreeGpus::CCheckFreeGpus(void)
 {
 	strcpy(m_acGpuFile, "/tmp/MotionCor2_FreeGpus.txt");
@@ -26,10 +42,13 @@ CCheckFreeGpus::~CCheckFreeGpus(void)
 void CCheckFreeGpus::SetAllGpus(int* piGpuIds, int iNumGpus)
 {
 	mClean();
-	m_piGpuIds = new int[iNumGpus];
-	m_piPids = new int[iNumGpus];
 	m_iNumGpus = iNumGpus;
-	//--------------------
+	if(m_iNumGpus <= 0) m_iNumGpus = 0;
+	if(m_iNumGpus == 0) return;
+	//-----------------
+	m_piGpuIds = new int[m_iNumGpus];
+	m_piPids = new int[m_iNumGpus];
+	//-----------------
 	memcpy(m_piGpuIds, piGpuIds, sizeof(int) * m_iNumGpus);
 	memset(m_piPids, 0, sizeof(int) * m_iNumGpus);
 	m_iPid = getpid();
@@ -37,9 +56,11 @@ void CCheckFreeGpus::SetAllGpus(int* piGpuIds, int iNumGpus)
 
 int CCheckFreeGpus::GetFreeGpus(int* piFreeGpus, int iNumFreeGpus)
 {
+	if(m_iNumGpus == 0) return -1;
+	//-----------------
 	int iFd = mOpenFile();
 	if(iFd == -1) return -1;
-	//----------------------
+	//-----------------
 	int iRet = mLockFile(iFd);
 	if(iRet == -1) 
 	{	close(iFd);
@@ -66,9 +87,13 @@ int CCheckFreeGpus::GetFreeGpus(int* piFreeGpus, int iNumFreeGpus)
 
 void CCheckFreeGpus::FreeGpus(void)
 {
+	if(m_iNumGpus <= 0) return;
+	if(m_piGpuIds == 0L) return;
+	if(m_piPids == 0L) return;
+	//-----------------
 	int iFd = mOpenFile();
 	if(iFd == -1) return;
-	//-------------------
+	//-----------------
 	int iRet = mLockFile(iFd);
 	if(iRet == -1)
 	{	close(iFd);
