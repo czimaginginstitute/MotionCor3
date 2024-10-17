@@ -947,3 +947,8 @@ MotionCor3_1.1.2 [06-11-2024]
    2) When -UseGpus specifies the same as or more GPUs than -Gpu provides,
       do not check. This means all specified GPUs following -GPU will be used.
    3) This is based on Github user request.
+
+MotionCor3_1.1.3 [10-17-2024]
+-----------------------------
+1. Revised CGenStarFile.cpp:
+   1) Fixed spelling errors and added FtBin entry.
