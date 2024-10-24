@@ -952,3 +952,7 @@ MotionCor3_1.1.3 [10-17-2024]
 -----------------------------
 1. Revised CGenStarFile.cpp:
    1) Fixed spelling errors and added FtBin entry.
+
+MotionCor3_1.1.4 [10-23-2024]
+-----------------------------
+1. Bug fix: Align/CLoadAlign::mReadSetting(): bug in reading m_aiStkSize.
