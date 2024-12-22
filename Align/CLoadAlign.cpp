@@ -139,7 +139,7 @@ void CLoadAlign::mReadSetting(void)
 	m_bLoaded = false;
 	while(!feof(m_pFile))
 	{	if(fgets(acLine, 256, m_pFile) == 0L) continue;
-		else if(strstr(acLine, pSaveAlign->m_acStackSize) == 0L)
+		else if(strstr(acLine, pSaveAlign->m_acStackSize) != 0L)
 		{	sscanf(acLine, "%s %d %d %d %d", acBuf, 
 			   m_aiStkSize+0, m_aiStkSize+1, 
 			   m_aiStkSize+2, &iNumStacks);
