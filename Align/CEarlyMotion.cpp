@@ -68,19 +68,29 @@ void CEarlyMotion::DoIt
 {	CInput* pInput = CInput::GetInstance();
 	if(m_eBuffer == EBuffer::xcf && pInput->m_aiGroup[0] == 1) return;
 	if(m_eBuffer == EBuffer::pat && pInput->m_aiGroup[1] == 1) return;
-	//--------------------------------------------------------------
+	//--------------------------
+	m_pPackage = pPackage;
 	m_pStackShift = pStackShift; 
 	//--------------------------
 	bool bPatch = (m_eBuffer == EBuffer::pat);
 	DU::CFmGroupParam* pFmGroupParam = &(pPackage->m_pFmGroupParams[1]);
-	m_aiCent[0] = 0;
-	m_aiCent[1] = (int)(pFmGroupParam->GetGroupCenter(0) + 0.5f);
-	m_aiCent[2] = (int)(pFmGroupParam->GetGroupCenter(1) + 0.5f);
-	//-----------------------------------------------------------
+	if(pFmGroupParam->m_iNumGroups < 2) return;
+	//---------------------------
+	m_aiNodeFm[0] = 0;
+	m_aiNodeFm[1] = pFmGroupParam->GetGroupStart(0) +
+	   pFmGroupParam->GetGroupSize(0) / 2;
+	m_aiNodeFm[2] = pFmGroupParam->GetGroupStart(1) +
+	   pFmGroupParam->GetGroupSize(1) / 2;
+	//---------------------------
+	DU::CFmIntParam* pFmIntParam = pPackage->m_pFmIntParam;
+	m_afCent[0] = pFmIntParam->m_pfIntFmCents[m_aiNodeFm[0]];
+	m_afCent[1] = pFmIntParam->m_pfIntFmCents[m_aiNodeFm[1]];
+	m_afCent[2] = pFmIntParam->m_pfIntFmCents[m_aiNodeFm[2]];
+	//---------------------------
 	m_aiSumRange[0] = pFmGroupParam->GetGroupSize(0);
 	m_aiSumRange[1] = m_pStackShift->m_iNumFrames * 2 / 3;
 	CAlignedSum::DoIt(m_eBuffer, m_pStackShift, m_aiSumRange);
-	//--------------------------------------------------------
+	//---------------------------
 	int iGpuID = -1;
 	cudaGetDevice(&iGpuID);
 	//------------------------
@@ -171,9 +181,10 @@ void CEarlyMotion::mGetNodeShifts
 	int iAxis, float* pfShift
 )
 {	float afShifts[6] = {0.0f};
-	pStackShift->GetShift(m_aiCent[0], &afShifts[0]);
-	pStackShift->GetShift(m_aiCent[1], &afShifts[2]);
-	pStackShift->GetShift(m_aiCent[2], &afShifts[4]);
+	pStackShift->GetShift(m_aiNodeFm[0], &afShifts[0]);
+	pStackShift->GetShift(m_aiNodeFm[1], &afShifts[2]);
+	pStackShift->GetShift(m_aiNodeFm[2], &afShifts[4]);
+	//-----------------
 	pfShift[0] = afShifts[0 + iAxis];
 	pfShift[1] = afShifts[2 + iAxis];
 	pfShift[2] = afShifts[4 + iAxis];
@@ -183,14 +194,14 @@ void CEarlyMotion::mCalcCoeff(float fGain, float* pfShift, float* pfCoeff)
 {
 	pfCoeff[0] = pfShift[0] + fGain;
 	//-------------------------------------------------------------
-	float x1_2 = m_aiCent[1] * m_aiCent[1];
-	float x2_2 = m_aiCent[2] * m_aiCent[2];
-	float fDelta = m_aiCent[1] * x2_2 - m_aiCent[2] * x1_2;
+	float x1_2 = m_afCent[1] * m_afCent[1];
+	float x2_2 = m_afCent[2] * m_afCent[2];
+	float fDelta = m_afCent[1] * x2_2 - m_afCent[2] * x1_2;
 	//-----------------------------------------------------
 	pfCoeff[1] = ((pfShift[1] - pfCoeff[0]) * x2_2 - 
 	   (pfShift[2] - pfCoeff[0]) * x1_2) / fDelta;
-	pfCoeff[2] = ((pfShift[2] - pfCoeff[0]) * m_aiCent[1] -
-	   (pfShift[1] - pfCoeff[0]) * m_aiCent[2]) / fDelta;
+	pfCoeff[2] = ((pfShift[2] - pfCoeff[0]) * m_afCent[1] -
+	   (pfShift[1] - pfCoeff[0]) * m_afCent[2]) / fDelta;
 }
 
 void CEarlyMotion::mCalcShift
@@ -199,17 +210,18 @@ void CEarlyMotion::mCalcShift
 	CStackShift* pStackShift
 )
 {	float afShift[2] = {0.0f};
+	DU::CFmIntParam* pFmIntParam = m_pPackage->m_pFmIntParam;
 	for(int i=0; i<m_aiSumRange[0]; i++)
 	{	pStackShift->GetShift(i, afShift);
-		int x = i;
-		int x2 = x * x;
+		float fX = pFmIntParam->m_pfIntFmCents[i];
+		float fX2 = fX * fX;
 		if(pfCoeffXs != 0L)
-		{	afShift[0] = pfCoeffXs[0] + pfCoeffXs[1] * x 
-			   + pfCoeffXs[2] * x2;
+		{	afShift[0] = pfCoeffXs[0] + pfCoeffXs[1] * fX 
+			   + pfCoeffXs[2] * fX2;
 		}
 		if(pfCoeffYs != 0L)
-		{	afShift[1] = pfCoeffYs[0] + pfCoeffYs[1] * x 
-			   + pfCoeffYs[2] * x2;
+		{	afShift[1] = pfCoeffYs[0] + pfCoeffYs[1] * fX
+			   + pfCoeffYs[2] * fX2;
 		}
 		pStackShift->SetShift(i, afShift);
 	}

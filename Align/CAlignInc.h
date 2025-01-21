@@ -355,6 +355,7 @@ private:
 	void mCorrelate(int iStep, CStackShift* pStackShift);
 	void mFindPeaks(float* pfPeaks);
 	void mFindPeak(int iPeak, float* pfPeak);
+	//---------------------------
 	float m_fBFactor;
 	cufftComplex* m_gCmpRef;
 	EBuffer m_eBuffer;
@@ -362,7 +363,10 @@ private:
 	GCorrelateSum2D m_aGCorrelateSum;
 	CStackShift* m_pStackShift;
 	Util::CCufft2D* m_pInverseFFT;
-	int m_aiCent[3];
+	DU::CDataPackage* m_pPackage;
+	//---------------------------
+	int m_aiNodeFm[3];
+	float m_afCent[3];
 	int m_aiSeaSize[2];
 	int m_aiSumRange[2];
 	int m_iNumSteps;

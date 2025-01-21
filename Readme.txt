@@ -956,3 +956,15 @@ MotionCor3_1.1.3 [10-17-2024]
 MotionCor3_1.1.4 [10-23-2024]
 -----------------------------
 1. Bug fix: Align/CLoadAlign::mReadSetting(): bug in reading m_aiStkSize.
+
+
+MotionCor3_1.1.5 [01-20-2025]
+-----------------------------
+1. 1) Bug fix: Align/CPatchShifts::SetRawShift: Indexing error in 
+      setting raw shifts.
+   2) Bug fix: DataUtil/CFmGroupParam.cpp: Incorrect calculating the
+      group center based on the total raw frames.
+   3) Bug fix: Align/CEarlyMotion.cpp: Confusion of node frame and node center.
+      Node frame refers to the index of the corresponding integrated frame.
+      Node center refers to the middle raw frame of integrated in this
+      integrated frame.  

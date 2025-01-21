@@ -44,7 +44,7 @@ void CPatchShifts::Setup(int iPatchesX, int iPatchesY, int* piFullSize)
 	int iNumPatches = iPatchesX * iPatchesY;
 	this->Setup(iNumPatches, piFullSize);
 }
-
+/*
 void CPatchShifts::SetRawShift(CStackShift* pStackShift, int iPatch)
 {
 	if(iPatch < 0 || iPatch >= m_iNumPatches) return;
@@ -59,6 +59,24 @@ void CPatchShifts::SetRawShift(CStackShift* pStackShift, int iPatch)
 	//-------------------------------------------
 	float* pfDstCenter = m_pfPatCenters + iPatch * 2;
 	pStackShift->GetCenter(pfDstCenter);
+}
+*/
+
+//--------------------------------------------------------------------
+// m_pfPatShifts[(iFm * m_iNumPatches + iPatch) * 2]
+//--------------------------------------------------------------------
+void CPatchShifts::SetRawShift(CStackShift* pStackShift, int iPatch)
+{
+        if(iPatch < 0 || iPatch >= m_iNumPatches) return;
+        //-----------------------------------------------
+        for(int i=0; i<m_aiFullSize[2]; i++)
+        {       int j = i * m_iNumPatches + iPatch;
+                float* pfDst = &m_pfPatShifts[j * 2];
+                pStackShift->GetShift(i, pfDst);
+        }
+        //-------------------------------------------
+        float* pfDstCenter = m_pfPatCenters + iPatch * 2;
+        pStackShift->GetCenter(pfDstCenter);
 }
 
 void CPatchShifts::SetFullShift(CStackShift* pFullShift)
