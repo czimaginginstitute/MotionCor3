@@ -967,4 +967,6 @@ MotionCor3_1.1.5 [01-20-2025]
    3) Bug fix: Align/CEarlyMotion.cpp: Confusion of node frame and node center.
       Node frame refers to the index of the corresponding integrated frame.
       Node center refers to the middle raw frame of integrated in this
-      integrated frame.  
+      integrated frame.
+2. Increased B-factor from 10 to 100 in Correct/GCorrectPatchShift.cu improves
+   local motion correction. 

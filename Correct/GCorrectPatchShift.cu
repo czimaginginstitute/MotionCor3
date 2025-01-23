@@ -201,7 +201,7 @@ void GCorrectPatchShift::mCorrectGpuFrames(void)
 
 void GCorrectPatchShift::mAlignFrame(cufftComplex* gCmpFrm)
 {
-	float fBFactor = 10.0f;
+	float fBFactor = 150.0f;
 	//---------------------------------
 	float* gfPadFrm = reinterpret_cast<float*>(gCmpFrm);
 	//--------------------------------------------------

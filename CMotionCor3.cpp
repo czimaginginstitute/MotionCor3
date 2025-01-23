@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
 	if(argc == 2)
 	{	if(strcasecmp(argv[1], "--version") == 0)
 		{	printf("MotionCor3 version 1.1.5\n"
-			       "Built on Jan 20 2025\n");
+			       "Built on Jan 22 2025\n");
 			return eSuccess;
 		}
 		if(strcasecmp(argv[1], "--help") == 0)
