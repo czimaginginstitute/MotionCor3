@@ -31,6 +31,12 @@ bool CLoadEerHeader::DoIt(TIFF* pTiff, int iEerSampling)
 	TIFFGetField(pTiff, TIFFTAG_COMPRESSION, &m_usCompression);
 	if(m_usCompression == 65000) m_iNumBits = 8;
 	else if(m_usCompression == 65001) m_iNumBits = 7;
+	else if(m_usCompression == 65002)
+	{	//uint16_t uiRleBits;
+		//TIFFGetField(pTiff, 65007, &uiRleBits);
+		//m_iNumBits = uiRleBits;
+		// need work on this case.
+	}
 	else m_iNumBits = -1;
 	//-------------------
 	bool bHasError = mCheckError();

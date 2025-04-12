@@ -200,12 +200,12 @@ void CPatchShifts::LogPatchShifts(char* pcLogFile)
 		float* pfPatCent = m_pfPatCenters + i * 2;
 		//----------------------------------------
 		for(int j=0; j<m_aiFullSize[2]; j++)
-		{	float* pfPatShift = m_pfPatShifts
-			   + (j * m_iNumPatches + i) * 2;
+		{	int k = j * m_iNumPatches + i;
+			float* pfPatShift = &m_pfPatShifts[k * 2];
 			fprintf(pFile, pcFormat1, j+1, pfPatCent[0], 
 			   pfPatCent[1]);
 			fprintf(pFile, pcFormat2, pfPatShift[0], pfPatShift[1], 
-			   m_pbBadShifts[j * m_iNumPatches + i]);
+			   m_pbBadShifts[k]);
 		}
 		fprintf(pFile, "\n");
 	}
@@ -236,12 +236,12 @@ void CPatchShifts::LogFrameShifts(char* pcLogFile)
         //------------------------------------------
 	for(int i=0; i<m_aiFullSize[2]; i++)
 	{	for(int j=0; j<m_iNumPatches; j++)
-		{	float* pfCent = m_pfPatCenters + j * 2;
-			float* pfShift = m_pfPatShifts +
-			   (i * m_iNumPatches + j) * 2;
+		{	int k = i * m_iNumPatches + j;
+			float* pfCent = m_pfPatCenters + j * 2;
+			float* pfShift = &m_pfPatShifts[k * 2];
 			fprintf(pFile, pcFormat1, i+1, pfCent[0], pfCent[1]);
 			fprintf(pFile, pcFormat2, pfShift[0], pfShift[1],
-			   m_pbBadShifts[i * m_iNumPatches + j]);
+			   m_pbBadShifts[k]);
 		}
 		fprintf(pFile, "\n");
 	}
@@ -312,11 +312,19 @@ void CPatchShifts::mDetectBadOnFrame(int iFrame)
 	//-----------------------------------------------------
 	bool* pbBads = m_pbBadShifts + iFrame * m_iNumPatches;
 	for(int i=0; i<m_iNumPatches; i++)
-	{	float fLocalRms = mCalcLocalRms(iFrame, i);
-		if(fLocalRms < fTol) pbBads[i] = false;
+	{	float fSx = pfShifts[i * 2];
+		float fSy = pfShifts[i * 2 + 1];
+		double dS = sqrt(fSx * fSx + fSy * fSy);
+		float fLocalRms = mCalcLocalRms(iFrame, i);
+		if(fLocalRms < 2) fLocalRms = 2.0f;
+		/*if(fLocalRms < fTol) pbBads[i] = false;
 		else pbBads[i] = true;
+		*/
+		if(dS > (1 * fLocalRms)) pbBads[i] = true;
+		else pbBads[i] = false;
 	}
 }
+
 
 float CPatchShifts::mCalcLocalRms(int iFrame, int iPatch)
 {
@@ -333,8 +341,12 @@ float CPatchShifts::mCalcLocalRms(int iFrame, int iPatch)
 		float fY = (m_pfPatCenters[j1] - pfCent[1]) / m_aiFullSize[1];
 		double dW = expf(-100.0 * (fX * fX + fY * fY));
 		//-------------------------------------------
-		fX = pfShifts[j0] - pfCentShift[0];
+		/*fX = pfShifts[j0] - pfCentShift[0];
 		fY = pfShifts[j1] - pfCentShift[1];
+		dRms += (dW * (fX * fX + fY * fY));
+		*/
+		fX = pfShifts[j0];
+		fY = pfShifts[j1];
 		dRms += (dW * (fX * fX + fY * fY));
 		dSumW += dW;
 	}

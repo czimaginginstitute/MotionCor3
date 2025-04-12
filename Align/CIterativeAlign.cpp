@@ -85,10 +85,10 @@ void CIterativeAlign::DoIt
 	pStackShift->Smooth(fWeight);
 	//---------------------------------------
 	if(pFmGroupParam->m_iBinZ >= 2)
-	{	CEarlyMotion* pEarlyMotion = new CEarlyMotion;
-		pEarlyMotion->Setup(m_eBuffer, m_fBFactor);
-		pEarlyMotion->DoIt(m_pPackage, pStackShift);
-		delete pEarlyMotion;
+	{	//CEarlyMotion* pEarlyMotion = new CEarlyMotion;
+		//pEarlyMotion->Setup(m_eBuffer, m_fBFactor);
+		//pEarlyMotion->DoIt(m_pPackage, pStackShift);
+		//delete pEarlyMotion;
 	}
 	delete[] m_pAlignStacks;
 	//---------------------------------------------------

@@ -11,6 +11,7 @@ CUSRCS = ./Util/GAddFrames.cu \
 	./Util/GFindMinMax2D.cu \
 	./Util/GFFTUtil2D.cu \
 	./Util/GFourierResize2D.cu \
+	./Util/GFtResize2D.cu \
 	./Util/GPartialCopy.cu \
 	./Util/GPositivity2D.cu \
 	./Util/GRoundEdge.cu \

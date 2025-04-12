@@ -969,4 +969,11 @@ MotionCor3_1.1.5 [01-20-2025]
       Node center refers to the middle raw frame of integrated in this
       integrated frame.
 2. Increased B-factor from 10 to 100 in Correct/GCorrectPatchShift.cu improves
-   local motion correction. 
+   local motion correction.
+
+MotionCor3_1.1.6 [04-12-2025]
+-----------------------------
+1. Bug Fix:
+2. Changes:
+   1) Correct/GCorrectPatchShift.cu: implemented upsampling to make the
+      interpolation on upsampling grid and Fourier-crop to original grid. 

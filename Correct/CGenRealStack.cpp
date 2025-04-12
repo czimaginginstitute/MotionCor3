@@ -15,11 +15,13 @@ static CStackBuffer* s_pTmpBuffer = 0L;
 static Align::CStackShift* s_pStackShift = 0L;
 static bool s_bCorrectBilinear = false;
 static bool s_bMotionDecon = false;
-
+static bool s_bGenReal = false;
+//----------------------------
 void CGenRealStack::DoIt
 (	EBuffer eBuffer,
 	bool bCorrectBilinear,
 	bool bMotionDecon,
+	bool bGenReal,
 	Align::CStackShift* pStackShift
 )
 {	CBufferPool* pBufferPool = CBufferPool::GetInstance();
@@ -27,11 +29,12 @@ void CGenRealStack::DoIt
 	s_pTmpBuffer = pBufferPool->GetBuffer(EBuffer::tmp);
 	s_pStackShift = pStackShift;
 	s_bCorrectBilinear = bCorrectBilinear;
+	s_bGenReal = bGenReal;
 	s_bMotionDecon = bMotionDecon;
-	//----------------------------
+	//---------------------------
 	int iNumGpus = s_pFrmBuffer->m_iNumGpus;
 	CGenRealStack* pThreads = new CGenRealStack[iNumGpus];
-	//-----------------------------------------------------------
+	//---------------------------
 	for(int i=0; i<iNumGpus; i++)
 	{	pThreads[i].Run(i);
 	};
@@ -58,18 +61,20 @@ void CGenRealStack::Run(int iNthGpu)
 void CGenRealStack::ThreadMain(void)
 {
 	s_pFrmBuffer->SetDevice(m_iNthGpu);
-	//---------------------------------
+	//---------------------------
 	cudaStreamCreate(&m_aStream[0]);
 	cudaStreamCreate(&m_aStream[1]);
-	//------------------------------
+	//---------------------------
 	CBufferPool* pBufferPool = CBufferPool::GetInstance();
-	m_pCufft2D = pBufferPool->GetInverseFFT(m_iNthGpu);
-	int* piCmpSize = s_pFrmBuffer->m_aiCmpSize;
-	m_pCufft2D->CreateInversePlan(piCmpSize, true);
-	//---------------------------------------------
+	if(s_bGenReal)
+	{	m_pCufft2D = pBufferPool->GetInverseFFT(m_iNthGpu);
+		int* piCmpSize = s_pFrmBuffer->m_aiCmpSize;
+		m_pCufft2D->CreateInversePlan(piCmpSize, true);
+	}
+	//---------------------------
 	mDoCpuFrames();
 	mDoGpuFrames();
-	//-------------
+	//---------------------------
 	cudaStreamSynchronize(m_aStream[0]);
 	cudaStreamSynchronize(m_aStream[1]);
 	cudaStreamDestroy(m_aStream[0]);
@@ -89,7 +94,9 @@ void CGenRealStack::mDoGpuFrames(void)
 		mAlignFrame(gCmpFrm);
 		mCorrectBilinear(gCmpFrm);
 		mMotionDecon(gCmpFrm);
-		m_pCufft2D->Inverse(gCmpFrm, m_aStream[0]);
+		if(s_bGenReal)
+		{	m_pCufft2D->Inverse(gCmpFrm, m_aStream[0]);
+		}
 	}
 }
 
@@ -116,7 +123,9 @@ void CGenRealStack::mDoCpuFrames(void)
 		mAlignFrame(gCmpBuf);
 		mCorrectBilinear(gCmpBuf);
 		mMotionDecon(gCmpBuf);
-		m_pCufft2D->Inverse(gCmpBuf, m_aStream[0]);
+		if(s_bGenReal)
+		{	m_pCufft2D->Inverse(gCmpBuf, m_aStream[0]);
+		}
 		if(iStream == 1) cudaStreamSynchronize(m_aStream[0]);
 		//---------------------------------------------------
 		cudaMemcpyAsync(pCmpFrm, gCmpBuf, tBytes,
