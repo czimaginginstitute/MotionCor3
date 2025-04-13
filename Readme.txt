@@ -976,4 +976,11 @@ MotionCor3_1.1.6 [04-12-2025]
 1. Bug Fix:
 2. Changes:
    1) Correct/GCorrectPatchShift.cu: implemented upsampling to make the
-      interpolation on upsampling grid and Fourier-crop to original grid. 
+      interpolation on upsampling grid and Fourier-crop to original grid.
+
+MotionCor3_1.1.7 [04-12-2025]
+-----------------------------
+1. Bug Fix:
+2. Changes:
+   1) Merge the implementation in GCtfFind into FindCtf. Note that the local
+      CTF measurement on tilt images has not been implemented. 

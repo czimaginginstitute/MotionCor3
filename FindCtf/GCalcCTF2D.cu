@@ -31,7 +31,7 @@ static __global__ void mGCalculate
 	fX = fDfMean + fDfSigma * cosf(2.0f * (fX - fAzimuth));
 	//-----------------------------------------------------
 	fX = -sinf(fExtPhase + 3.1415926f * s_gfCtfParam[0] * fS2
-	   * (fX - 0.5f * fW2 * fW2 * s_gfCtfParam[1]));
+	   * (fX - 0.5f * fW2 * fS2 * s_gfCtfParam[1]));
 	//----------------------------------------------
 	gfCTF2D[y * gridDim.x + blockIdx.x] = fX * fX;
 }

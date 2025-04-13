@@ -47,7 +47,8 @@ CUSRCS = ./Util/GAddFrames.cu \
 	./FindCtf/GRmBackground2D.cu \
 	./FindCtf/GCalcCTF1D.cu \
 	./FindCtf/GCalcCTF2D.cu \
-	./FindCtf/GRadialAvg.cu
+	./FindCtf/GRadialAvg.cu \
+	./FindCtf/GSpectralCC2D.cu
 CUCPPS = $(patsubst %.cu, %.cpp, $(CUSRCS))
 #------------------------------------------
 SRCS = ./Util/CCufft2D.cpp \

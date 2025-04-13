@@ -39,7 +39,7 @@ void CFindCtfBase::Setup2(CCtfParam* pCtfParam)
 	// 2) see CFindCtf1D for using m_afResRange.
 	//-----------------------------------------------
 	float fPixSize = m_pCtfParam0->GetPixSize();
-	m_afResRange[0] = 15.0f * fPixSize;
+	m_afResRange[0] = 20.0f * fPixSize;
         m_afResRange[1] = 3.5f * fPixSize;
 }
 

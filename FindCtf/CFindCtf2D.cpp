@@ -33,16 +33,15 @@ void CFindCtf2D::Setup1(int* piSpectSize)
 {
 	this->Clean();
 	CFindCtf1D::Setup1(piSpectSize);
-	m_pFindDefocus2D = new CFindDefocus2D;
-	m_pFindDefocus2D->Setup1(piSpectSize);
 }
 
 void CFindCtf2D::Setup2(CCtfParam* pCtfParam)
 {
 	CFindCtf1D::Setup2(pCtfParam);
-	//----------------------------
-	m_pFindDefocus2D->Setup2(m_pCtfParam0);
-	m_pFindDefocus2D->Setup3(m_afResRange);
+	//---------------------------
+	m_pFindDefocus2D = new CFindDefocus2D;
+	m_pFindDefocus2D->Setup1(pCtfParam, m_aiSpectSize);
+	m_pFindDefocus2D->Setup2(m_afResRange);
 }
 
 void CFindCtf2D::DoIt(float* gfSpect)
@@ -53,8 +52,8 @@ void CFindCtf2D::DoIt(float* gfSpect)
 	float fDfMean = m_pCtfParamN->GetDfMin(bAngstrom);
 	float fPhase = m_pCtfParamN->GetExtPhase(bDegree);
 	//------------------------------------------------
-	m_pFindDefocus2D->Setup3(m_afResRange);
-	m_pFindDefocus2D->Setup4(fDfMean, 0.0f, 0.0f, fPhase);
+	m_pFindDefocus2D->Setup2(m_afResRange);
+	m_pFindDefocus2D->Setup3(fDfMean, 0.0f, 0.0f, fPhase);
 	m_pFindDefocus2D->DoIt(m_gfSpect, m_fPhaseRange);
 	mGetResults();
 }
@@ -65,7 +64,7 @@ void CFindCtf2D::Refine
 	float afAstAngle[2],
 	float afExtPhase[2]
 )
-{	m_pFindDefocus2D->Setup4(afDfMean[0], afAstRatio[0],
+{	m_pFindDefocus2D->Setup3(afDfMean[0], afAstRatio[0],
 	   afAstAngle[0], afExtPhase[0]);
 	m_pFindDefocus2D->Refine(m_gfSpect, afDfMean[1],
 	   afAstRatio[1], afAstAngle[1], afExtPhase[1]);

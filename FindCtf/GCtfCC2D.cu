@@ -150,6 +150,7 @@ float GCtfCC2D::DoIt
 	//------------------------------------------------
 	float fFreqLow2 = m_fFreqLow / m_aiCmpSize[1];
 	float fFreqHigh2 = m_fFreqHigh / m_aiCmpSize[1];
+	if(fFreqHigh2 > 0.75f) fFreqHigh2 = 0.75f;
 	fFreqLow2 *= fFreqLow2;
 	fFreqHigh2 *= fFreqHigh2;
 	//-----------------------
