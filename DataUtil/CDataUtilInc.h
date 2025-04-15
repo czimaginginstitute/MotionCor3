@@ -66,6 +66,7 @@ public:
         void SetAzimuth(int iImage, float fAzimuth);
         void SetExtPhase(int iImage, float fExtPhase);
         void SetScore(int iImage, float fScore);
+	void SetCtfRes(int iImage, float fCtfRes);
         void SetSpect(int iImage, float* pfSpect);
 	//----------------------------------------
         void SaveImod(void);
@@ -79,6 +80,7 @@ public:
         float* m_pfAzimuths;
         float* m_pfExtPhases;
         float* m_pfScores;
+	float m_fCtfReses;
         float* m_pfTilts;
 private:
 	void mInit(void);

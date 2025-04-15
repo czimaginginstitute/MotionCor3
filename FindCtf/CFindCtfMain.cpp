@@ -55,13 +55,14 @@ void CFindCtfMain::DoIt
 	CCtfParam* pResParam = m_pFindCtf2D->GetResult();
 	printf("CTF estimate\n");
 	printf("  Df_max [A]   Df_min [A]  Azimuth [d]  "
-	   "Phase [d]    Score\n");
-	printf("  %9.2f    %9.2f  %8.2f    %7.2f    %9.4f\n",
+	   "Phase [d]    Score       Res\n");
+	printf("  %9.2f    %9.2f  %8.2f    %7.2f    %9.4f  %7.2f\n",
 	   pResParam->GetDfMax(bAngstrom),
 	   pResParam->GetDfMin(bAngstrom),
 	   pResParam->GetAstAng(bDegree),
 	   pResParam->GetExtPhase(bDegree),
-	   pResParam->m_fScore);
+	   pResParam->m_fScore,
+	   pResParam->m_fCtfRes);
 	printf("\n");
 	//-----------------
 	if(m_pFindCtf2D != 0L) delete m_pFindCtf2D;

@@ -25,14 +25,14 @@ public:
 	  float fPixSize // Angstrom
 	);
 	void Setup(CCtfParam* pCtfParam);
-	//-------------------------------
+	//---------------------------
 	void SetDfMin(float fDfMin, bool bAngstrom);
 	void SetDfMax(float fDfMax, bool bAngstrom);
 	void SetDfs(float fDfMin, float fDfMax, bool bAngstrom);
 	void SetAstAngle(float fAstAngle, bool bDegree);
 	void SetExtPhase(float fExtPhase, bool bDegree);
 	void SetPixSize(float fPixSiize);
-	//----------------------------------------------	
+	//---------------------------
 	float GetWavelength(bool bAngstrom);
 	float GetDfMax(bool bAngstrom);
 	float GetDfMin(bool bAngstrom);
@@ -40,18 +40,19 @@ public:
 	float GetExtPhase(bool bDegree);
 	float GetPixSize(void);
 	CCtfParam* GetCopy(void);
-	//------------------------------
+	//---------------------------
 	float m_fWaveLen; // pixel
 	float m_fKv;
 	float m_fCs; // pixel
 	float m_fAmpCont;
 	float m_fAmpPhaseShift; // radian
 	float m_fExtPhase;   // radian
-	float m_fDfMax; // pixel
-	float m_fDfMin; // pixel
-	float m_fAstAng; // Radian
-	float m_fPixSize;  // Angstrom
+	float m_fDfMax;   // pixel
+	float m_fDfMin;   // pixel
+	float m_fAstAng;  // Radian
+	float m_fPixSize; // Angstrom
 	float m_fScore;
+	float m_fCtfRes;  // angstrom
 };
 
 class CCtfTheory

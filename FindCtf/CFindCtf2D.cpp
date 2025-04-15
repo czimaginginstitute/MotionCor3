@@ -79,4 +79,5 @@ void CFindCtf2D::mGetResults(void)
 	m_pCtfParamN->SetAstAngle(m_pFindDefocus2D->GetAngle(), bDegree);
 	m_pCtfParamN->SetExtPhase(m_pFindDefocus2D->GetExtPhase(), bDegree);
 	m_pCtfParamN->m_fScore = m_pFindDefocus2D->GetScore();	
+	m_pCtfParamN->m_fCtfRes = m_pFindDefocus2D->GetCtfRes();
 }

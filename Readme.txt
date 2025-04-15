@@ -983,4 +983,12 @@ MotionCor3_1.1.7 [04-12-2025]
 1. Bug Fix:
 2. Changes:
    1) Merge the implementation in GCtfFind into FindCtf. Note that the local
-      CTF measurement on tilt images has not been implemented. 
+      CTF measurement on tilt images has not been implemented.
+
+MotionCor3_1.1.8 [04-14-2025]
+-----------------------------
+1. Bug Fig:
+   1) FindCtf/GCalcCTF2D::mGEmbedCtf: negative frequency mapping to positive
+      frequency. Corrected: iY = (iCmpY - y) % iCmpY
+2. Changes:
+   1) Added Thon ring resolution estimation. 
