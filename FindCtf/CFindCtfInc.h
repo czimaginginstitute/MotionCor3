@@ -378,6 +378,22 @@ private:
 	float m_fBFactor;
 };
 
+class CRescaleImage
+{
+public:
+	CRescaleImage(void);
+	~CRescaleImage(void);
+	float* GetImage(void) { return m_gfPadImgN; }
+	void DoIt(float* gfImg, int* piImgSize, DU::CDataPackage* pPackage);
+	//---------------------------
+	int m_aiImgSizeN[2];
+	int m_aiPadSizeN[2];
+	float m_fPixSizeN;
+private:
+	float* m_gfPadImgN;
+	float m_fBinning;
+
+};	// CRescaleImage
 
 class CGenAvgSpectrum
 {
@@ -678,6 +694,7 @@ private:
 	float* m_gfAvgSpect;
 	float* m_gfFullSpect; // [iTileSize+2, iTileSize]
 	float* m_gfExtBuf;
+	float m_fPixSizeN;
 	//-----------------
 	CFindCtf2D* m_pFindCtf2D;
 	DU::CDataPackage* m_pPackage;

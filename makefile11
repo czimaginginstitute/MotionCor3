@@ -126,6 +126,7 @@ SRCS = ./Util/CCufft2D.cpp \
 	./FindCtf/CFindDefocus2D.cpp \
 	./FindCtf/CFindCtfMain.cpp \
 	./FindCtf/CFindCtfHelp.cpp \
+	./FindCtf/CRescaleImage.cpp \
 	./CInput.cpp \
 	./CGpuBuffer.cpp \
 	./CStackBuffer.cpp \

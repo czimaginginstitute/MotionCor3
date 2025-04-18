@@ -85,8 +85,9 @@ void CFindCtfBase::mGetDfRange(float fInitDf, float fDfRange, float* pfDfRange)
 {
 	float fPixSize = m_pCtfParam0->GetPixSize();
 	float fPixSize2 = fPixSize * fPixSize;
-	float fDfMin = 3000.0f * fPixSize2;
+	float fDfMin = 1000.0f * fPixSize2;
 	float fDfMax = 30000.0f * fPixSize2;
+	if(fDfMin < 1000.0f) fDfMin = 1000.0f;
 	//----------------------------------
 	pfDfRange[0] = fmaxf(fInitDf - 0.5f * fDfRange, fDfMin);
 	pfDfRange[1] = fminf(pfDfRange[0] + fDfRange, fDfMax);

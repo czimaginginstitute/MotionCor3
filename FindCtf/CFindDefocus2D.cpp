@@ -90,7 +90,7 @@ void CFindDefocus2D::Setup2(float afResRange[2])
 	float fRes1 = m_aiCmpSize[1] * m_pCtfParam->m_fPixSize;
 	float fMinFreq = fRes1 / afResRange[0];
 	float fMaxFreq = fRes1 / afResRange[1];
-	m_pGCtfCC2D->Setup(fMinFreq, fMaxFreq, 100.0f);
+	m_pGCtfCC2D->Setup(fMinFreq, fMaxFreq, 40.0f);
 }
 
 //--------------------------------------------------------------------
@@ -341,7 +341,7 @@ float CFindDefocus2D::mRefinePhase(float fPhaseRange)
 	float fMinPhase = m_afPhaseRange[0] - m_afPhaseRange[1] * 0.5f;
 	float fMaxPhase = m_afPhaseRange[1] + m_afPhaseRange[1] * 0.5f;
 	if(fMinPhase < 0) fMinPhase = 0.0f;
-	if(fMaxPhase > 150) fMaxPhase = 180.0f;
+	if(fMaxPhase > 150) fMaxPhase = 150.0f;
 	//-----------------
 	float fCCMax = (float)-1e20, fPhaseMax = 0.0f, fPhase = 0.0f;
 	for(int i=0; i<iSteps; i++)

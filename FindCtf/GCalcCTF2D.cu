@@ -64,7 +64,7 @@ static __global__ void mGEmbedCtf
 	int iX = gridDim.x - blockIdx.x;
 	int iY = (iCmpY - y) % iCmpY;
 	fY = gfCtf2D[iY * (gridDim.x + 1) + iX];
-	fY = (fY * fY - 0.5f) * fGain - fMean;
+	fY = (fY - 0.5f) * fGain + fMean;
 	//--------------------------------------------------------
 	// CTF is embededd on the right half of the full spectrum.
 	// Therefore, there is a (gridDim.x = iNx / 2) offset in
