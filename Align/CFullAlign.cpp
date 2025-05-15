@@ -153,13 +153,13 @@ void CFullAlign::mDoAlign(void)
 		pPatchCenters->Calculate();
 		//----------------------------------------------------------
 		bool bCorrBilinear = true, bMotionDecon = true;
+		bool bGenReal = true;
 		Correct::CGenRealStack::DoIt(EBuffer::xcf, !bCorrBilinear, 
-		   !bMotionDecon, m_pFullShift);
+		   !bMotionDecon, bGenReal, m_pFullShift);
 	}
 	//-----------------------------------------------------------------
 	CBufferPool* pBufferPool = CBufferPool::GetInstance();
 	float* pfXcfBin = pBufferPool->m_afXcfBin;	
-	//m_pFullShift->MakeRelative(iFrmRef);
 	m_pFullShift->Multiply(pfXcfBin[0], pfXcfBin[1]);
 }
 

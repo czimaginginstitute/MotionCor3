@@ -42,26 +42,33 @@ void CFindCtfMain::DoIt
 	float* gfBuf, DU::CDataPackage* pPackage
 )
 {	if(!CFindCtfMain::m_bEstCtf) return;
-	//-----------------
+	//---------------------------
+	CRescaleImage* pRescaleImg = new CRescaleImage;
+	pRescaleImg->DoIt(gfImg, piImgSize, pPackage);
+	float* gfPadImgN = pRescaleImg->GetImage();
+	m_fPixSizeN = pRescaleImg->m_fPixSizeN;
+	//---------------------------
 	m_pPackage = pPackage;
 	m_pFindCtf2D = new CFindCtf2D;
-	//-----------------
-	mGenSpectrums(gfImg, piImgSize, bPadded, gfBuf);
+	//---------------------------
+	mGenSpectrums(gfPadImgN, pRescaleImg->m_aiPadSizeN, true, gfBuf);
+	//---------------------------
 	mFindCTF();
 	mEmbedCTF();
 	mAddSpectrumToPackage();
-	//-----------------
+	//---------------------------
 	bool bAngstrom = true, bDegree = true;
 	CCtfParam* pResParam = m_pFindCtf2D->GetResult();
 	printf("CTF estimate\n");
 	printf("  Df_max [A]   Df_min [A]  Azimuth [d]  "
-	   "Phase [d]    Score\n");
-	printf("  %9.2f    %9.2f  %8.2f    %7.2f    %9.4f\n",
+	   "Phase [d]    Score       Res\n");
+	printf("  %9.2f    %9.2f  %8.2f    %7.2f    %9.4f  %7.2f\n",
 	   pResParam->GetDfMax(bAngstrom),
 	   pResParam->GetDfMin(bAngstrom),
 	   pResParam->GetAstAng(bDegree),
 	   pResParam->GetExtPhase(bDegree),
-	   pResParam->m_fScore);
+	   pResParam->m_fScore,
+	   pResParam->m_fCtfRes);
 	printf("\n");
 	//-----------------
 	if(m_pFindCtf2D != 0L) delete m_pFindCtf2D;
@@ -95,14 +102,13 @@ void CFindCtfMain::mGenSpectrums
 void CFindCtfMain::mFindCTF(void)
 {
 	CInput* pInput = CInput::GetInstance();
-	float fPixSize = m_pPackage->m_pAlnSums->m_fPixSize;
 	CCtfParam ctfParam;
 	ctfParam.Setup(pInput->m_iKv, pInput->m_fCs,
-	   pInput->m_fAmpCont, fPixSize);
-	//-----------------
-	float fDfRange = 40000.0f * fPixSize * fPixSize;
+	   pInput->m_fAmpCont, m_fPixSizeN);
+	//---------------------------
+	float fDfRange = 40000.0f * m_fPixSizeN * m_fPixSizeN;
 	float fPhaseRange = fminf(pInput->m_fExtPhase * 2.0f, 180.0f);
-	//-----------------
+	//---------------------------
 	m_pFindCtf2D->Setup1(m_aiSpectSize);
 	m_pFindCtf2D->Setup2(&ctfParam);
 	m_pFindCtf2D->SetDfRange(fDfRange);
@@ -110,7 +116,7 @@ void CFindCtfMain::mFindCTF(void)
 	m_pFindCtf2D->SetAngRange(180.0f);
 	m_pFindCtf2D->SetPhaseRange(fPhaseRange);
 	m_pFindCtf2D->DoIt(m_gfAvgSpect);
-	//-----------------
+	//---------------------------
 	CCtfParam* pResParam = m_pFindCtf2D->GetResult();
         m_pPackage->SetCtfParam(pResParam);
 }

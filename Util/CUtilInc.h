@@ -241,6 +241,44 @@ public:
 	);
 };
 
+class GFtResize2D
+{
+public:
+	GFtResize2D(void);
+	~GFtResize2D(void);
+	//-----------------
+	static void GetBinnedCmpSize
+	(  int* piCmpSize,// cmp size before binning
+	   float fBin,
+	   int* piNewSize // cmp size after binning
+	);
+	static void GetBinnedImgSize
+	(  int* piImgSize, // img size before binning
+	   float fBin,
+	   int* piNewSize
+	);
+	static float CalcPixSize
+	(  int* piImgSize, // img size before binning
+	   float fBin,
+	   float fPixSize  // before binning
+	);
+	static void GetBinning
+	(  int* piCmpSize,  // cmp size before binning
+	   int* piNewSize,  // cmp size after binning
+	   float* pfBinning
+	);
+	void DownSample
+	( cufftComplex* gCmpIn, int* piSizeIn,
+	  cufftComplex* gCmpOut, int* piSizeOut,
+	  bool bSum, cudaStream_t stream = 0
+	);
+	void UpSample
+	( cufftComplex* gCmpIn, int* piSizeIn,
+	  cufftComplex* gCmpOut, int* piSizeOut,
+	  cudaStream_t stream = 0
+	);
+};
+
 class GAddFrames
 {
 public:

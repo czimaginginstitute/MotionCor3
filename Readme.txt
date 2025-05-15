@@ -947,3 +947,67 @@ MotionCor3_1.1.2 [06-11-2024]
    2) When -UseGpus specifies the same as or more GPUs than -Gpu provides,
       do not check. This means all specified GPUs following -GPU will be used.
    3) This is based on Github user request.
+
+MotionCor3_1.1.3 [10-17-2024]
+-----------------------------
+1. Revised CGenStarFile.cpp:
+   1) Fixed spelling errors and added FtBin entry.
+
+MotionCor3_1.1.4 [10-23-2024]
+-----------------------------
+1. Bug fix: Align/CLoadAlign::mReadSetting(): bug in reading m_aiStkSize.
+
+
+MotionCor3_1.1.5 [01-20-2025]
+-----------------------------
+1. 1) Bug fix: Align/CPatchShifts::SetRawShift: Indexing error in 
+      setting raw shifts.
+   2) Bug fix: DataUtil/CFmGroupParam.cpp: Incorrect calculating the
+      group center based on the total raw frames.
+   3) Bug fix: Align/CEarlyMotion.cpp: Confusion of node frame and node center.
+      Node frame refers to the index of the corresponding integrated frame.
+      Node center refers to the middle raw frame of integrated in this
+      integrated frame.
+2. Increased B-factor from 10 to 100 in Correct/GCorrectPatchShift.cu improves
+   local motion correction.
+
+MotionCor3_1.1.6 [04-12-2025]
+-----------------------------
+1. Bug Fix:
+2. Changes:
+   1) Correct/GCorrectPatchShift.cu: implemented upsampling to make the
+      interpolation on upsampling grid and Fourier-crop to original grid.
+
+MotionCor3_1.1.7 [04-12-2025]
+-----------------------------
+1. Bug Fix:
+2. Changes:
+   1) Merge the implementation in GCtfFind into FindCtf. Note that the local
+      CTF measurement on tilt images has not been implemented.
+
+MotionCor3_1.2.0 [04-18-2025]
+-----------------------------
+1. Bug Fix:
+   1) FindCtf/GCalcCTF2D::mGEmbedCtf: negative frequency mapping to positive
+      frequency. Corrected: iY = (iCmpY - y) % iCmpY
+   2) FindCtf/CFindDefocus2D::mRefinePhase: correct upper limit.
+2. Changes:
+   1) Added Thon ring resolution estimation. 
+   2) FindCtf/CFindDefocus2D: reduced lowpass strength from 100 to 40 to
+      account for more high frequency signals.
+   3) CRescaleImage.cpp in FindCtf to expand Thon distance for high defocus images
+      collected at high magnifications (< 1.25 A).
+
+MotionCor3 1.2.1 [05-14-2025]
+-----------------------------
+1. Bug Fix:
+   1) FindCtf/GCalcCTF2D: It calculates CTF^2, inconsistent with GCalcCTF1D,
+      which calculates CTF.
+   2) Because of 1), both GCtfCC1D and GCtf2D have been revised to correlate
+      with |CTF| - 0.5.
+   3) Because of 1), GSpectralCC2D has been changed to correlate against
+      |CTF| - 0.5f.
+2 Changes:
+   1) FindCtf/CFindDefocus2D: The B-factor has been dropped from 40 to 16
+      to include more high-frequency information. This has been found more
+      accurate in the estimation of small phase shift in LPP.

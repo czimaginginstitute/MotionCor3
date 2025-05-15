@@ -11,6 +11,7 @@ CUSRCS = ./Util/GAddFrames.cu \
 	./Util/GFindMinMax2D.cu \
 	./Util/GFFTUtil2D.cu \
 	./Util/GFourierResize2D.cu \
+	./Util/GFtResize2D.cu \
 	./Util/GPartialCopy.cu \
 	./Util/GPositivity2D.cu \
 	./Util/GRoundEdge.cu \
@@ -46,7 +47,8 @@ CUSRCS = ./Util/GAddFrames.cu \
 	./FindCtf/GRmBackground2D.cu \
 	./FindCtf/GCalcCTF1D.cu \
 	./FindCtf/GCalcCTF2D.cu \
-	./FindCtf/GRadialAvg.cu
+	./FindCtf/GRadialAvg.cu \
+	./FindCtf/GSpectralCC2D.cu
 CUCPPS = $(patsubst %.cu, %.cpp, $(CUSRCS))
 #------------------------------------------
 SRCS = ./Util/CCufft2D.cpp \
@@ -124,6 +126,7 @@ SRCS = ./Util/CCufft2D.cpp \
 	./FindCtf/CFindDefocus2D.cpp \
 	./FindCtf/CFindCtfMain.cpp \
 	./FindCtf/CFindCtfHelp.cpp \
+	./FindCtf/CRescaleImage.cpp \
 	./CInput.cpp \
 	./CGpuBuffer.cpp \
 	./CStackBuffer.cpp \
