@@ -26,7 +26,7 @@ static __global__ void mGCalculate
 	fs2 = fs2 * fs2;
 	float fw2 = s_gfCtfParam[0] * s_gfCtfParam[0];
 	fw2 = fExtPhase + 3.141592654f * s_gfCtfParam[0] * fs2
-	   * (fDefocus - 0.5f * fw2 * fw2 * s_gfCtfParam[1]);
+	   * (fDefocus - 0.5f * fw2 * fs2 * s_gfCtfParam[1]);
 	//---------------------------------------------------
 	gfCTF1D[i] = -sinf(fw2);
 }

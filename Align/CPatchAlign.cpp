@@ -37,9 +37,9 @@ void CPatchAlign::DoIt(DU::CDataPackage* pPackage)
 	mCalcPatchShifts();
 	float fSeconds = aTimer.GetElapsedSeconds();
 	printf("Patch alignment time: %.2f(sec)\n\n", fSeconds);
-	//------------------------------------------------------
+	//---------------------------
 	Correct::GCorrectPatchShift::DoIt(m_pPatchShifts, pPackage); 
-	//----------------------------------------------------------
+	//---------------------------
 	CSaveAlign* pSaveAlign = CSaveAlign::GetInstance();
 	pSaveAlign->DoLocal(m_pPatchShifts);
 }
@@ -50,13 +50,15 @@ void CPatchAlign::mCorrectFullShift(void)
 	CAlignParam* pAlignParam = CAlignParam::GetInstance();
 	int iRefFrame = pAlignParam->GetFrameRef(m_pFullShift->m_iNumFrames);
 	m_pFullShift->MakeRelative(iRefFrame);
-	//-------------------------------------------------------------------
+	//---------------------------
 	CInput* pInput = CInput::GetInstance();
 	bool bCorrInterp = (pInput->m_iCorrInterp == 0) ? false : true;
 	bool bMotionDecon = (pInput->m_iInFmMotion == 0) ? false : true; 
+	bool bGenReal = true;
+	//---------------------------
 	Util_Time utilTime; utilTime.Measure();
 	Correct::CGenRealStack::DoIt(EBuffer::frm,
-	   bCorrInterp, bMotionDecon, m_pFullShift);
+	   bCorrInterp, bMotionDecon, !bGenReal, m_pFullShift);
 	printf("Global shifts are corrected: %f sec\n",
 		utilTime.GetElapsedSeconds());
 	nvtxRangePop();

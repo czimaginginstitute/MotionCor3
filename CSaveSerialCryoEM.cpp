@@ -289,6 +289,6 @@ void CSaveSerialCryoEM::mSaveCtfFit(void)
 	   pCtfParam->GetAstAng(bDegree),
 	   pCtfParam->GetExtPhase(bDegree),
 	   pCtfParam->m_fScore,
-	   10.0f); // 10.0f temporary
+	   pCtfParam->m_fCtfRes);
 	fclose(pFile);
 }	

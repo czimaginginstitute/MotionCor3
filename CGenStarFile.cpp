@@ -98,14 +98,16 @@ void CGenStarFile::SetStackSize(int* piStkSize)
 		   pcGainFile);
 	}
 	//---------------------
-	fprintf(m_pFile, "%40s %-16.6f\n", "_rlnOriginalPixelSize",
+	fprintf(m_pFile, "%40s %-16.6f\n", "_rlnMicrographOriginalPixelSize",
 	   pInput->m_fPixelSize);
+	fprintf(m_pFile, "%40s %-16.6f\n", "rlnMicrographBinning",
+	   pInput->m_fFourierBin);
 	fprintf(m_pFile, "%40s %-16.6f\n", "_rlnMicrographDoseRate",
 	   pInput->m_fFmDose);
 	fprintf(m_pFile, "%40s %-16.6f\n", "_rlnMicrographPreExposure", 0.0f);
 	fprintf(m_pFile, "%40s %-16.6f\n", "_rlnVoltage",
 	   (float)pInput->m_iKv);
-	fprintf(m_pFile, "%40s %-16d\n","_rlnMincrographStartFrame",
+	fprintf(m_pFile, "%40s %-16d\n","_rlnMicrographStartFrame",
 	   pInput->m_aiThrow[0] + 1);
 	fprintf(m_pFile, "%40s %-16d\n", "_rlnMotionModelVersion", 0);
 	fprintf(m_pFile, "\n");		

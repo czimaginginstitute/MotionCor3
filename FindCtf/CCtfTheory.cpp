@@ -16,6 +16,7 @@ CCtfParam::CCtfParam(void)
 	m_fExtPhase = 0.0f;
 	m_fWaveLen = 0.0f;
 	m_fScore = 0.0f;
+	m_fCtfRes = 0.0f;
 }
 
 CCtfParam::CCtfParam(CCtfParam &ctfParam)
@@ -36,18 +37,19 @@ void CCtfParam::Setup
 	m_fCs = (float)(fCs * 1e7 / fPixSize);
 	m_fAmpCont = fAmpContrast;
 	m_fPixSize = fPixSize;
-	//---------------------------------------------------------
+	//---------------------------
 	double dWl = 12.26 / sqrt(fKv * 1000 + 0.9784 * fKv * fKv);
         m_fWaveLen = (float)(dWl / m_fPixSize);
-	//-------------------------------------
+	//---------------------------
 	float fAC2 = m_fAmpCont * m_fAmpCont;
 	m_fAmpPhaseShift = atan(fAmpContrast / sqrt(1 - fAC2)); 
-	//-----------------------------------------------------
+	//---------------------------
 	m_fDfMin = 0.0f;
 	m_fDfMax = 0.0f;
 	m_fAstAng = 0.0f;
 	m_fExtPhase = 0.0f;
 	m_fScore = 0.0f;
+	m_fCtfRes = 0.0f;
 }
 
 void CCtfParam::Setup(CCtfParam* pCtfParam)
@@ -61,6 +63,7 @@ void CCtfParam::Setup(CCtfParam* pCtfParam)
 	m_fAstAng = pCtfParam->m_fAstAng;
 	m_fPixSize = pCtfParam->m_fPixSize;
 	m_fScore = pCtfParam->m_fScore;
+	m_fCtfRes = pCtfParam->m_fCtfRes;
 	m_fAmpPhaseShift = pCtfParam->m_fAmpPhaseShift;
 }
 

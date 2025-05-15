@@ -66,6 +66,7 @@ public:
 	( EBuffer eBuffer,
 	  bool bCorrectBilinear,
 	  bool bMotionDecon,
+	  bool bGenReal,
 	  Align::CStackShift* pStackShift = 0L
 	);
 
@@ -151,11 +152,21 @@ protected:
 	virtual void mAlignFrame(cufftComplex* gCmpFrm);
 	void mCalcMeanShift(int iStream);
 	virtual void mMotionDecon(cufftComplex* gCmpFrm);
-	//-----------------------------------------------
+	//---------------------------
+	void mClean(void);
+	void mSetupUpSample(void);
+	void mUpSample(cufftComplex* gCmpFrm);
+	//---------------------------
 	static Align::CPatchShifts* m_pPatchShifts;
 	float* m_gfPatShifts;
 	bool* m_gbBadShifts;
 	float* m_gfPatCenters;
+	//---------------------------
+	Util::CCufft2D* m_pUpsInvFFT;
+	cufftComplex* m_gCmpUpsampled;
+        int m_aiUpCmpSize[2];
+        int m_iUpsample;
+	//---------------------------
 	dim3 m_aBlockDim;
 	dim3 m_aGridDim;
 };	

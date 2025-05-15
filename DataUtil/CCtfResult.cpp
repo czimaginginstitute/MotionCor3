@@ -10,7 +10,7 @@ using namespace MotionCor2::DataUtil;
 CCtfResult::CCtfResult(void)
 {
 	mInit();
-	m_iNumCols = 6;
+	m_iNumCols = 7;
 }
 
 //------------------------------------------------------------------------------
@@ -37,14 +37,15 @@ void CCtfResult::Setup(int iNumImgs, int* piSpectSize)
 {
 	this->Clean();
 	m_iNumImgs = iNumImgs;
-	//--------------------
+	//---------------------------
 	m_pfDfMins = new float[m_iNumImgs * m_iNumCols];
 	m_pfDfMaxs = &m_pfDfMins[m_iNumImgs];
 	m_pfAzimuths = &m_pfDfMaxs[m_iNumImgs];
 	m_pfExtPhases = &m_pfAzimuths[m_iNumImgs];
-	m_pfScores = &m_pfExtPhases[m_iNumImgs];
+	m_pfScores = &m_pfExtPhases[m_iNumImgs]; 
 	m_pfTilts = &m_pfScores[m_iNumImgs];
-	//-------------------------------------------------
+	m_pfCtfReses = &m_pfTilts[m_iNumImgs];
+	//---------------------------
 	int iBytes = sizeof(float) * m_iNumImgs * m_iNumCols;
 	memset(m_pfDfMins, 0, iBytes);
 	//----------------------------
@@ -93,6 +94,11 @@ void CCtfResult::SetScore(int iImage, float fScore)
 	m_pfScores[iImage] = fScore;
 }
 
+void CCtfResult::SetCtfScore(int iImage, float fCtfScore)
+{
+	m_pfCtfReses[iImage] = fCtfScore;
+}
+
 void CCtfResult::SetSpect(int iImage, float* pfSpect)
 {
 	if(m_ppfSpects[iImage] != 0L) delete[] m_ppfSpects[iImage];
@@ -127,6 +133,11 @@ float CCtfResult::GetExtPhase(int iImage)
 float CCtfResult::GetScore(int iImage)
 {
 	return m_pfScores[iImage];
+}
+
+float CCtfResult::GetCtfRes(int iImage)
+{
+	return m_pfCtfReses[iImage];
 }
 
 float* CCtfResult::GetSpect(int iImage, bool bClean)
@@ -184,10 +195,10 @@ void CCtfResult::SaveImod(void)
 
 void CCtfResult::Display(int iNthCtf)
 {
-	printf("%4d  %8.2f  %8.2f  %6.2f %6.2f %9.5f\n", iNthCtf+1,
+	printf("%4d  %8.2f  %8.2f  %6.2f %6.2f %9.5f %6.2\n", iNthCtf+1,
 	   this->GetDfMin(iNthCtf), this->GetDfMax(iNthCtf),
            this->GetAzimuth(iNthCtf), this->GetExtPhase(iNthCtf),
-           this->GetScore(iNthCtf));
+           this->GetScore(iNthCtf), this->GetCtfRes(iNthCtf));
 }
 
 void CCtfResult::DisplayAll(void)

@@ -66,6 +66,7 @@ public:
         void SetAzimuth(int iImage, float fAzimuth);
         void SetExtPhase(int iImage, float fExtPhase);
         void SetScore(int iImage, float fScore);
+	void SetCtfRes(int iImage, float fCtfRes);
         void SetSpect(int iImage, float* pfSpect);
 	//----------------------------------------
         void SaveImod(void);
@@ -79,6 +80,7 @@ public:
         float* m_pfAzimuths;
         float* m_pfExtPhases;
         float* m_pfScores;
+	float m_fCtfReses;
         float* m_pfTilts;
 private:
 	void mInit(void);
@@ -116,42 +118,6 @@ private:
 	CEntry** m_ppEntries;
 	static CReadFmIntFile* m_pInstance;
 };
-/*
-class CFmIntegrateParam
-{
-public:
-        CFmIntegrateParam(void);
-        ~CFmIntegrateParam(void);
-	static bool DoseWeight(void);
-	static bool DWSelectedSum(void);
-	static bool NeedIntegrate(void);
-        //------------------------------
-        void Setup(int iNumRawFms, int iMrcMode);// All frames in input movie
-        int GetIntFmStart(int iIntFrame);
-        int GetIntFmSize(int iIntFrame);
-        int GetNumIntFrames(void);
-        float GetAccruedDose(int iIntFrame);
-        bool InSumRange(int iIntFrame);
-        CFmIntegrateParam* GetCopy(void);
-        //-------------------------------
-        int m_iNumIntFms;
-        float* m_pfIntFmDose;  // Dose within int. frame exposure
-        float* m_pfAccFmDose;  // Acumulated dose of each int. frame
-	float* m_pfIntFmCents; // Centers of int. frames for shift
-	                       // interpolation.
-private:
-        void mSetup(void);
-        void mSetupFile(void);    // FmIntFile has variable dose, intSize = 1
-	void mSetupFileInt(void); // FmIntFile has fixed dose, intSize > 1
-        void mClean(void);
-        void mAllocate(void);
-	void mCalcIntFmCenters(void);
-        int* m_piIntFmStart;
-        int* m_piIntFmSize;
-        int m_iNumRawFms;   // All frames in the input movie file
-        int m_iMrcMode;
-};
-*/
 
 class CFmIntParam
 {
@@ -208,13 +174,15 @@ public:
 	int m_iBinZ;
 private:
         void mGroupByRawSize(CFmIntParam* pFmIntParam);
-        void mGroupByDose(CFmIntParam* pFmIntParam);
+	void mFindMaxGroupRawFms(CFmIntParam* pFmIntParam);
         CFmGroupParam* mGetCopy(void);
         void mClean(void);
         void mAllocate(void);
+	//---------------------------
         int* m_piGroupStart;
         int* m_piGroupSize;
         float* m_pfGroupCenters;
+	int m_iMaxGroupRawFms;
 };
 
 class CDataPackage
