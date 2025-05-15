@@ -90,7 +90,7 @@ void CFindDefocus2D::Setup2(float afResRange[2])
 	float fRes1 = m_aiCmpSize[1] * m_pCtfParam->m_fPixSize;
 	float fMinFreq = fRes1 / afResRange[0];
 	float fMaxFreq = fRes1 / afResRange[1];
-	m_pGCtfCC2D->Setup(fMinFreq, fMaxFreq, 40.0f);
+	m_pGCtfCC2D->Setup(fMinFreq, fMaxFreq, 16.0f);
 }
 
 //--------------------------------------------------------------------

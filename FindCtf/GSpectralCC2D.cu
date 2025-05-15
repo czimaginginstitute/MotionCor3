@@ -53,7 +53,7 @@ static __global__ void mGCalc2D
 			if(fR < iLow || fR >= iHigh) continue;
 			//---------------
 			int i = y * iSpectX + x;
-			float fC = gfCTF2D[i];
+			float fC = fabsf(gfCTF2D[i]) - 0.5f;
 			float fS = gfSpect[i];
 			fSumMeanC += fC;
 			fSumMeanS += fS;

@@ -987,7 +987,7 @@ MotionCor3_1.1.7 [04-12-2025]
 
 MotionCor3_1.2.0 [04-18-2025]
 -----------------------------
-1. Bug Fig:
+1. Bug Fix:
    1) FindCtf/GCalcCTF2D::mGEmbedCtf: negative frequency mapping to positive
       frequency. Corrected: iY = (iCmpY - y) % iCmpY
    2) FindCtf/CFindDefocus2D::mRefinePhase: correct upper limit.
@@ -997,3 +997,17 @@ MotionCor3_1.2.0 [04-18-2025]
       account for more high frequency signals.
    3) CRescaleImage.cpp in FindCtf to expand Thon distance for high defocus images
       collected at high magnifications (< 1.25 A).
+
+MotionCor3 1.2.1 [05-14-2025]
+-----------------------------
+1. Bug Fix:
+   1) FindCtf/GCalcCTF2D: It calculates CTF^2, inconsistent with GCalcCTF1D,
+      which calculates CTF.
+   2) Because of 1), both GCtfCC1D and GCtf2D have been revised to correlate
+      with |CTF| - 0.5.
+   3) Because of 1), GSpectralCC2D has been changed to correlate against
+      |CTF| - 0.5f.
+2 Changes:
+   1) FindCtf/CFindDefocus2D: The B-factor has been dropped from 40 to 16
+      to include more high-frequency information. This has been found more
+      accurate in the estimation of small phase shift in LPP.

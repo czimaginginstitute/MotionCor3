@@ -40,7 +40,8 @@ void CFindCtfBase::Setup2(CCtfParam* pCtfParam)
 	//-----------------------------------------------
 	float fPixSize = m_pCtfParam0->GetPixSize();
 	m_afResRange[0] = 20.0f * fPixSize;
-        m_afResRange[1] = 3.5f * fPixSize;
+	m_afResRange[1] = (2.0f * fPixSize) / 0.8f;
+	if(m_afResRange[1] < 3.5f) m_afResRange[1] = 3.5f;
 }
 
 void CFindCtfBase::SetDfRange(float fDfRange)

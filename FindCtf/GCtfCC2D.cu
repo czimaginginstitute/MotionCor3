@@ -36,7 +36,8 @@ static __global__ void mGCalc2D
 			if(fX <fFreqLow2 || fX > fFreqHigh2) continue;
 			//--------------------------------------------
 			i = iOffset + x;
-			float fC = gfCTF2D[i] * expf(-fBFactor * fX);
+			float fC = (fabsf(gfCTF2D[i]) - 0.5f) 
+			   * expf(-fBFactor * fX);
 			float fS = gfSpectrum[i];
 			fSumCC += (fC * fS);
 			fSumStd1 += (fC * fC);
