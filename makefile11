@@ -71,6 +71,7 @@ SRCS = ./Util/CCufft2D.cpp \
 	./DataUtil/CFmGroupParam.cpp \
 	./DataUtil/CDataPackage.cpp \
 	./DataUtil/CStackFolder.cpp \
+	./DataUtil/CSaveMovieDone.cpp \
 	./BadPixel/CCorrectMain.cpp \
 	./BadPixel/CDetectMain.cpp \
 	./BadPixel/CLocalCCMap.cpp \
@@ -145,14 +146,13 @@ CC = g++ -std=c++11
 CFLAG = -c -g -pthread -m64
 NVCC = $(CUDAHOME)/bin/nvcc -std=c++11
 CUFLAG = -Xptxas -dlcm=ca -O2 \
+	-gencode arch=compute_90,code=sm_90 \
+	-gencode arch=compute_89,code=sm_89 \
+	-gencode arch=compute_87,code=sm_87 \
 	-gencode arch=compute_86,code=sm_86 \
 	-gencode arch=compute_80,code=sm_80 \
 	-gencode arch=compute_75,code=sm_75 \
-	-gencode arch=compute_70,code=sm_70 \
-	-gencode arch=compute_52,code=sm_52 \
-        -gencode arch=compute_53,code=sm_53 \
-        -gencode arch=compute_60,code=sm_60 \
-        -gencode arch=compute_61,code=sm_61 
+	-gencode arch=compute_70,code=sm_70
 #------------------------------------------
 cuda: $(CUCPPS)
 

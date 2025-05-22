@@ -23,8 +23,7 @@ public:
 	bool IsInMrc(void);
 	bool IsInTiff(void);
 	bool IsInEer(void);
-	float GetFinalPixelSize(); // after binning & mag correction
-	float GetFinalPixelSize(float fPixelSize);
+	float GetFinalPixelSize(void); // after binning & mag correction
 	char m_acInMrcFile[256];
 	char m_acInTifFile[256];
 	char m_acInEerFile[256];

@@ -1011,3 +1011,10 @@ MotionCor3 1.2.1 [05-14-2025]
    1) FindCtf/CFindDefocus2D: The B-factor has been dropped from 40 to 16
       to include more high-frequency information. This has been found more
       accurate in the estimation of small phase shift in LPP.
+
+MotionCor3 1.2.2 [05-19-2025]
+-----------------------------
+1. Bug Fix:
+2: Changes:
+   1) makefile11: add compute capability 9.0 for H100 and H200.
+   2) Added CSaveMovieDone.cpp to track what movie files have been processed.

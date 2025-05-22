@@ -243,20 +243,20 @@ char* CStackFolder::mGetInPrefix(void)
 
 bool CStackFolder::mGetDirName(void)
 {
+	memset(m_acDirName, 0, sizeof(m_acDirName));
 	char* pcPrefix = mGetInPrefix();
 	char* pcSlash = strrchr(pcPrefix, '/');
 	if(pcSlash == 0L)
 	{	strcpy(m_acPrefix, pcPrefix);
-		char* pcRet = getcwd(m_acDirName, sizeof(m_acDirName));
+		//char* pcRet = getcwd(m_acDirName, sizeof(m_acDirName));
 		strcpy(m_acDirName, "./");
 		return true;
 	}
-	//------------------
-	int iNumChars = pcSlash - pcPrefix + 1;
-	memcpy(m_acDirName, pcPrefix, iNumChars);
-	//---------------------------------------
-	int iBytes = strlen(pcPrefix) - iNumChars;
-	if(iBytes > 0) memcpy(m_acPrefix, pcSlash + 1, iBytes);
+	//---------------------------
+	strcpy(m_acPrefix, &pcSlash[1]);
+	strcpy(m_acDirName, pcPrefix);
+	pcSlash = strrchr(m_acDirName, '/');
+	strcpy(pcSlash, "/");
 	return true;
 }
 

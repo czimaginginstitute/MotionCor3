@@ -709,17 +709,16 @@ bool CInput::IsInEer(void)
 float CInput::GetFinalPixelSize(void)
 {
 	float fFinalSize = m_fPixelSize * m_fFourierBin;
+	float fEerSampling = 1.0f;
+	if(this->IsInEer())
+	{	if(m_iEerSampling == 2) fEerSampling = 2.0f;
+		else if(m_iEerSampling == 3) fEerSampling = 4.0f;
+	}
+	fFinalSize /= fEerSampling;
+	//---------------------------
 	if(m_afMag[0] > m_afMag[1]) fFinalSize /= m_afMag[0];
 	else fFinalSize /= m_afMag[1];
 	return fFinalSize;
-}
-
-float CInput::GetFinalPixelSize(float fPixelSize)
-{
-	float fFinalSize = fPixelSize * m_fFourierBin;
-        if(m_afMag[0] > m_afMag[1]) fFinalSize /= m_afMag[0];
-        else fFinalSize /= m_afMag[1];
-        return fFinalSize;
 }
 
 void CInput::mPrint(void)

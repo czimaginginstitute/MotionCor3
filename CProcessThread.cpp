@@ -83,14 +83,19 @@ void CProcessThread::mProcess(void)
 {
 	Util_Time aTimer;
 	aTimer.Measure();
-	//---------------
+	//---------------------------
+	DU::CDataPackage* pPackage = (DU::CDataPackage*)m_pvPackage;
+	DU::CSaveMovieDone* pSaveMovieDone = 
+	   DU::CSaveMovieDone::GetInstance();
+	pSaveMovieDone->DoStart(pPackage->m_pcInFileName);
+	//---------------------------
 	bool bSuccess = mCheckGain();
 	if(!bSuccess) return;
-	//-------------------
+	//---------------------------
 	nvtxRangePushA("mApplyRefs");
 	mApplyRefs();
 	nvtxRangePop();
-	//-------------
+	//---------------------------
 	nvtxRangePushA("mDetectBadPixels");
 	mDetectBadPixels();
 	nvtxRangePop();
@@ -102,8 +107,9 @@ void CProcessThread::mProcess(void)
 	nvtxRangePop();
 	float fSecs = aTimer.GetElapsedSeconds();
 	printf("Computation time: %f sec\n\n", fSecs);
-	//--------------------------------------------
+	//---------------------------
 	mSaveAlnSums();
+	pSaveMovieDone->DoEnd(pPackage->m_pcInFileName);
 }
 
 bool CProcessThread::mCheckGain(void)

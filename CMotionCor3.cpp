@@ -34,8 +34,8 @@ int main(int argc, char* argv[])
 	CInput* pInput = CInput::GetInstance();
 	if(argc == 2)
 	{	if(strcasecmp(argv[1], "--version") == 0)
-		{	printf("MotionCor3 version 1.2.1\n"
-			       "Built on May 14 2025\n");
+		{	printf("MotionCor3 version 1.2.3\n"
+			       "Built on May 22 2025\n");
 			return eSuccess;
 		}
 		if(strcasecmp(argv[1], "--help") == 0)

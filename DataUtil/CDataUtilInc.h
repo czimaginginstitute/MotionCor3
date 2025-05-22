@@ -270,4 +270,19 @@ private:
         static CStackFolder* m_pInstance;
 };
 
+class CSaveMovieDone
+{
+public:
+	static CSaveMovieDone* GetInstance(void);
+	static void DeleteInstance(void);
+	CSaveMovieDone(void);
+	~CSaveMovieDone(void);
+	void DoStart(const char* pcMovieFile);
+	void DoEnd(const char* pcMovieFile);
+private:
+	void mDoIt(const char* pcMovieFile, const char* pcStatus);
+	FILE* m_pLogFile;
+	static CSaveMovieDone* m_pInstance;
+};
+
 }}
