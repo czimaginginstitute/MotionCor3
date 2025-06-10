@@ -29,22 +29,34 @@ bool CLoadEerHeader::DoIt(TIFF* pTiff, int iEerSampling)
 	TIFFGetField(pTiff, TIFFTAG_IMAGELENGTH, &m_aiCamSize[1]);
 	m_iNumFrames = TIFFNumberOfDirectories(pTiff);
 	TIFFGetField(pTiff, TIFFTAG_COMPRESSION, &m_usCompression);
-	if(m_usCompression == 65000) m_iNumBits = 8;
-	else if(m_usCompression == 65001) m_iNumBits = 7;
-	else if(m_usCompression == 65002)
-	{	//uint16_t uiRleBits;
-		//TIFFGetField(pTiff, 65007, &uiRleBits);
-		//m_iNumBits = uiRleBits;
-		// need work on this case.
+	if(m_usCompression == 65000) 
+	{	m_iNumBits = 8;
+		m_iSuperBits = 4;
 	}
-	else m_iNumBits = -1;
+	else if(m_usCompression == 65001) 
+	{	m_iNumBits = 7;
+		m_iSuperBits = 4;
+	}
+	else if(m_usCompression == 65002) 
+	{	m_iNumBits = 7;
+		m_iSuperBits = 2;
+	}
+	else 
+	{	m_iNumBits = -1;
+		m_iSuperBits = -1;
+	}
 	//-------------------
 	bool bHasError = mCheckError();
 	if(bHasError) return false;
-	//-------------------------
+	//---------------------------
+	if(m_usCompression == 65002)
+	{	if(m_iEerSampling > 2) m_iEerSampling = 2;
+	}
+	//---------------------------
 	int iFact = 1;
 	if(m_iEerSampling == 2) iFact = 2;
 	else if(m_iEerSampling == 3) iFact = 4;
+	//-------------------------
 	m_aiFrmSize[0] = m_aiCamSize[0] * iFact;
 	m_aiFrmSize[1] = m_aiCamSize[1] * iFact;
 	return true;

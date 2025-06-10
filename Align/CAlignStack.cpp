@@ -57,8 +57,8 @@ void CAlignStack::Set2(EBuffer eBuffer, DU::CFmGroupParam* pFmGroupParam)
 	//---------------------------------
 	int* piCmpSize = m_pFrmBuffer->m_aiCmpSize;
 	int iImgSizeX = (piCmpSize[0] - 1) * 2;
-	m_aiSeaSize[0] = (64 < iImgSizeX) ? 64 : iImgSizeX;
-	m_aiSeaSize[1] = (64 < piCmpSize[1]) ? 64 : piCmpSize[1];
+	m_aiSeaSize[0] = (128 < iImgSizeX) ? 128 : iImgSizeX;
+	m_aiSeaSize[1] = (128 < piCmpSize[1]) ? 128 : piCmpSize[1];
 	//-------------------------------------------------------
 	m_aGCorrelateSum.SetSize(m_pFrmBuffer->m_aiCmpSize, m_aiSeaSize);
 	//---------------------------------------------------------------

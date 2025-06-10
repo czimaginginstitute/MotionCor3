@@ -26,7 +26,8 @@ void CRenderMrcStack::DoIt
 {	m_pLoadEerHeader = pLoadEerHeader;
 	m_pLoadEerFrames = pLoadEerFrames;
 	m_aDecodeEerFrame.Setup(m_pLoadEerHeader->m_aiCamSize, 
-	   m_pLoadEerHeader->m_iEerSampling);
+	   m_pLoadEerHeader->m_iEerSampling, 
+	   m_pLoadEerHeader->m_iSuperBits);
 	//-----------------------------------
 	DU::CDataPackage* pPackage = (DU::CDataPackage*)pvDataPackage;
 	if(pPackage->m_pFmIntParam->bIntegrate()) 

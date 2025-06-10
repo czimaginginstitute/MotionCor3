@@ -1018,3 +1018,11 @@ MotionCor3 1.2.2 [05-19-2025]
 2: Changes:
    1) makefile11: add compute capability 9.0 for H100 and H200.
    2) Added CSaveMovieDone.cpp to track what movie files have been processed.
+
+MotionCor3 1.2.3 [05-27-2025]
+-----------------------------
+1. Bug Fix:
+   1) EerUtil/CLoadEerFrames: using unsigned int for movies containing large
+      number of frames (signed integer overflow).
+2. Changes:
+   1) Added support for EER compression 61002.

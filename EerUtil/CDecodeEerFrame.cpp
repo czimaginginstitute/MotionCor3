@@ -14,21 +14,34 @@ CDecodeEerFrame::~CDecodeEerFrame(void)
 {
 }
 
-void CDecodeEerFrame::Setup(int* piCamSize, int iEerUpSampling)
+void CDecodeEerFrame::Setup
+(	int* piCamSize, 
+	int iEerSampling, 
+	int iSuperBits)
 {
 	m_aiCamSize[0] = piCamSize[0];
 	m_aiCamSize[1] = piCamSize[1];
 	m_uiCamPixels = piCamSize[0] * piCamSize[1];
-	m_iUpSampling = iEerUpSampling;
+	m_iUpSampling = iEerSampling;
+	m_iSuperBits = iSuperBits;
 	//-----------------------------
 	int iFact = 1;
 	if(m_iUpSampling == 2) 
 	{	iFact = 2;
-		m_aiSuperResAnd[0] = 2;
-		m_aiSuperResAnd[1] = 8;
-		m_aiSuperResShift[0] = 1;
-		m_aiSuperResShift[1] = 1;
-		m_aiSuperResShift[2] = 3;
+		if(m_iSuperBits == 4)
+		{	m_aiSuperResAnd[0] = 2;
+			m_aiSuperResAnd[1] = 8;
+			m_aiSuperResShift[0] = 1;
+			m_aiSuperResShift[1] = 1;
+			m_aiSuperResShift[2] = 3;
+		}
+		else if(m_iSuperBits == 2)
+		{	m_aiSuperResAnd[0] = 1;
+			m_aiSuperResAnd[1] = 2;
+			m_aiSuperResShift[0] = 1;
+			m_aiSuperResShift[1] = 0;
+			m_aiSuperResShift[2] = 1;
+		}
 	}
 	else if(m_iUpSampling == 3) 
 	{	iFact = 4;
@@ -74,6 +87,7 @@ void CDecodeEerFrame::mDo7BitsCounted(void)
 	unsigned int uiBitPos = 0;
 	unsigned char p;
 	unsigned int uiChunk = 0;
+	int iFullBits = 7 + m_iSuperBits;
 	//-----------------------
 	while(true)
 	{	unsigned int uiFirstByte = uiBitPos >> 3;
@@ -87,19 +101,19 @@ void CDecodeEerFrame::mDo7BitsCounted(void)
 		if(m_uiNumPixels >= m_uiCamPixels) break;
 		else if(p == 127) continue;
 		//-------------------------
-		uiBitPos += 4;
+		uiBitPos += m_iSuperBits;
 		m_uiX = m_uiNumPixels % m_aiFrmSize[0];
 		m_uiY = m_uiNumPixels / m_aiFrmSize[0];
 		m_pucRawFrame[m_uiY * m_aiFrmSize[0] + m_uiX] += 1;
 		m_uiNumPixels += 1;
 		//-----------------
-		p = (unsigned char)((uiChunk >> 11) & 127);
+		p = (unsigned char)((uiChunk >> iFullBits) & 127);
 		uiBitPos += 7;
 		m_uiNumPixels += p;
 		if(m_uiNumPixels >= m_uiCamPixels) break;
 		else if(p == 127) continue;
 		//-------------------------
-		uiBitPos += 4;
+		uiBitPos += m_iSuperBits;
 		m_uiX = m_uiNumPixels % m_aiFrmSize[0];
 		m_uiY = m_uiNumPixels / m_aiFrmSize[0];
 		m_pucRawFrame[m_uiY * m_aiFrmSize[0] + m_uiX] += 1;
@@ -113,9 +127,22 @@ void CDecodeEerFrame::mDo7BitsSuperRes(void)
 	unsigned int uiBitPos = 0;
 	unsigned char p;
 	unsigned int uiChunk = 0;
-	//-----------------------
+	//---------------------------
+	int iMaskBits = (m_iSuperBits == 4) ? 15 : 3;
+	int i2ndShift = 7 * 2 + m_iSuperBits;
+	int iFullBits = 7 + m_iSuperBits;
+	//---------------------------
+	
 	while(true)
-	{	unsigned int uiFirstByte = uiBitPos >> 3;
+	{	//---------------------------------------------
+		// uiBitPos >> 3: convert current bit position
+		//     to byte position.
+		// uiBitPos & 7: If uiBitPos is not divisible
+		//     by 8, the remainder bits need to be
+		//     shifted away since the chunk always
+		//     starts at a byte.
+		//---------------------------------------------
+		unsigned int uiFirstByte = uiBitPos >> 3;  
 		unsigned int uiBitOffset = uiBitPos & 7; // % 8
 		uiChunk = (*(unsigned int*)(m_pucEerFrame + uiFirstByte))
 		   >> uiBitOffset;
@@ -126,20 +153,21 @@ void CDecodeEerFrame::mDo7BitsSuperRes(void)
 		if(m_uiNumPixels >= m_uiCamPixels) break;
 		else if(p == 127) continue;
 		//-------------------------
-		m_ucS = (unsigned char)((uiChunk >> 7) & 15) ^ 0x0A;
-		uiBitPos += 4;
+		m_ucS = (unsigned char)((uiChunk >> 7) & iMaskBits) ^ 0x0A;
+		uiBitPos += m_iSuperBits;
 		//------------
 		mFindElectron();
 		m_uiNumPixels += 1;
 		//-----------------
-		p = (unsigned char)((uiChunk >> 11) & 127);
+		p = (unsigned char)((uiChunk >> iFullBits) & 127);
 		uiBitPos += 7;
 		m_uiNumPixels += p;
 		if(m_uiNumPixels >= m_uiCamPixels) break;
 		else if(p == 127) continue;
 		//-------------------------
-		m_ucS = (unsigned char)((uiChunk >> 18) & 15) ^ 0x0A;
-		uiBitPos += 4;
+		m_ucS = (unsigned char)((uiChunk >> i2ndShift) 
+		   & iMaskBits) ^ 0x0A;
+		uiBitPos += m_iSuperBits;
 		mFindElectron();
 		m_uiNumPixels += 1;
 	}
@@ -204,7 +232,7 @@ void CDecodeEerFrame::mDo8BitsSuperRes(void)
 		uiPos += 3;
 	}
 }
-
+/*
 void  CDecodeEerFrame::mFindElectron(void)
 {
 	m_uiX = ((m_uiNumPixels & 4095) << m_aiSuperResShift[0])
@@ -212,4 +240,13 @@ void  CDecodeEerFrame::mFindElectron(void)
 	m_uiY = ((m_uiNumPixels >> 12) << m_aiSuperResShift[0])
 	   | ((m_ucS & m_aiSuperResAnd[1]) >> m_aiSuperResShift[2]);
 	m_pucRawFrame[m_uiY * m_aiFrmSize[0] + m_uiX] += 1;
+}
+*/
+void  CDecodeEerFrame::mFindElectron(void)
+{
+        m_uiX = ((m_uiNumPixels % m_aiCamSize[0]) << m_aiSuperResShift[0])
+           | ((m_ucS & m_aiSuperResAnd[0]) >> m_aiSuperResShift[1]);
+        m_uiY = ((m_uiNumPixels / m_aiCamSize[0]) << m_aiSuperResShift[0])
+           | ((m_ucS & m_aiSuperResAnd[1]) >> m_aiSuperResShift[2]);
+        m_pucRawFrame[m_uiY * m_aiFrmSize[0] + m_uiX] += 1;
 }

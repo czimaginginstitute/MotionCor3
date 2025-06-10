@@ -32,6 +32,7 @@ public:
 	int m_aiFrmSize[2];
 	int m_iNumFrames;
 	int m_iNumBits;
+	int m_iSuperBits;
 	int m_iEerSampling;
 private:
 	bool mCheckError(void);
@@ -55,10 +56,10 @@ private:
 	void mReadFrame(int iFrame);
 	TIFF* m_pTiff;
 	unsigned char* m_pucFrames;
-	int* m_piFrmStarts;
-	int* m_piFrmSizes;
+	unsigned int* m_puiFrmStarts;
+	unsigned int* m_puiFrmSizes;
 	int m_iNumFrames;
-	int m_iBytesRead;
+	unsigned int m_uiBytesRead;
 };
 
 class CDecodeEerFrame
@@ -66,7 +67,11 @@ class CDecodeEerFrame
 public:
 	CDecodeEerFrame(void);
 	~CDecodeEerFrame(void);
-	void Setup(int* piCamSize, int iEerUpSampling);
+	void Setup
+	( int* piCamSize, 
+	  int iEerSampling, 
+	  int iSupBits
+	);
 	void Do7Bits
 	( unsigned char* pucEerFrame,
 	  int iEerFrameSize,
@@ -84,7 +89,7 @@ private:
 	void mDo8BitsCounted(void);
 	void mDo8BitsSuperRes(void);
 	void mFindElectron(void);
-	//-----------------------
+	//---------------------------
 	unsigned int m_uiCamPixels;
 	unsigned char* m_pucEerFrame;
 	unsigned char* m_pucRawFrame;
@@ -92,7 +97,10 @@ private:
 	unsigned char m_ucS;
 	unsigned int m_uiX;
 	unsigned int m_uiY;
+	//---------------------------
 	int m_iUpSampling;
+	int m_iSuperBits;	// number of super-res bits
+	//---------------------------
 	int m_iEerFrameSize;
 	int m_aiCamSize[2];
 	int m_aiSuperResAnd[2];

@@ -11,8 +11,8 @@ using namespace MotionCor2::EerUtil;
 CLoadEerFrames::CLoadEerFrames(void)
 {
 	m_pucFrames = 0L;
-	m_piFrmStarts = 0L;
-	m_piFrmSizes = 0L;
+	m_puiFrmStarts = 0L;
+	m_puiFrmSizes = 0L;
 }
 
 CLoadEerFrames::~CLoadEerFrames(void)
@@ -24,10 +24,10 @@ void CLoadEerFrames::Clean(void)
 {
 	if(m_pucFrames != 0L) delete[] m_pucFrames;
 	m_pucFrames = 0L;
-	if(m_piFrmStarts != 0L) delete[] m_piFrmStarts;
-	m_piFrmStarts = 0L;
-	if(m_piFrmSizes != 0L) delete[] m_piFrmSizes;
-	m_piFrmSizes = 0L;
+	if(m_puiFrmStarts != 0L) delete[] m_puiFrmStarts;
+	m_puiFrmStarts = 0L;
+	if(m_puiFrmSizes != 0L) delete[] m_puiFrmSizes;
+	m_puiFrmSizes = 0L;
 }
 
 bool CLoadEerFrames::DoIt
@@ -46,12 +46,12 @@ bool CLoadEerFrames::DoIt
 	memset(m_pucFrames, 0, sizeof(char) * uiSize);
 	//--------------------------------------------
 	int iBytes = sizeof(int) * m_iNumFrames;
-	m_piFrmStarts = new int[m_iNumFrames];
-	m_piFrmSizes = new int[m_iNumFrames];
-	memset(m_piFrmStarts, 0, iBytes);
-	memset(m_piFrmSizes, 0, iBytes);
+	m_puiFrmStarts = new unsigned int[m_iNumFrames];
+	m_puiFrmSizes = new unsigned int[m_iNumFrames];
+	memset(m_puiFrmStarts, 0, iBytes);
+	memset(m_puiFrmSizes, 0, iBytes);
 	//------------------------------
-	m_iBytesRead = 0;
+	m_uiBytesRead = 0;
 	CInput* pInput = CInput::GetInstance();
 	if(pInput->m_iTiffOrder >= 0)
 	{	for(int i=0; i<m_iNumFrames; i++) mReadFrame(i);
@@ -67,30 +67,31 @@ bool CLoadEerFrames::DoIt
 unsigned char* CLoadEerFrames::GetEerFrame(int iFrame)
 {
 	if(m_pucFrames == 0L) return 0L;
-	return m_pucFrames + m_piFrmStarts[iFrame];
+	return m_pucFrames + m_puiFrmStarts[iFrame];
 }
 
 int CLoadEerFrames::GetEerFrameSize(int iFrame)
 {
-	if(m_piFrmSizes == 0L) return 0;
-	return m_piFrmSizes[iFrame];
+	if(m_puiFrmSizes == 0L) return 0;
+	return (int)m_puiFrmSizes[iFrame];
 }
 
 void CLoadEerFrames::mReadFrame(int iFrame)
 {
-	m_piFrmStarts[iFrame] = m_iBytesRead;
-	unsigned char* pcEerFrm = m_pucFrames + m_iBytesRead;
+	m_puiFrmStarts[iFrame] = m_uiBytesRead;
+	unsigned char* pcEerFrm = m_pucFrames + m_uiBytesRead;
 	//---------------------------------------------------
 	TIFFSetDirectory(m_pTiff, iFrame);
 	int iNumStrips = TIFFNumberOfStrips(m_pTiff);
-	int iFrmBytes = 0;
+	unsigned int uiFrmBytes = 0;
 	//----------------
 	for(int i=0; i<iNumStrips; i++)
 	{	int iStripBytes = TIFFRawStripSize(m_pTiff, i);
-		TIFFReadRawStrip(m_pTiff, i, pcEerFrm + iFrmBytes, iStripBytes);
-		iFrmBytes += iStripBytes;
+		TIFFReadRawStrip(m_pTiff, i, pcEerFrm + uiFrmBytes, 
+		   iStripBytes);
+		uiFrmBytes += iStripBytes;
 	}
-	m_piFrmSizes[iFrame] = iFrmBytes;
-	m_iBytesRead += iFrmBytes;
+	m_puiFrmSizes[iFrame] = uiFrmBytes;
+	m_uiBytesRead += uiFrmBytes;
 }
 

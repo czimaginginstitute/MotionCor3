@@ -186,8 +186,16 @@ void CFullAlign::LogShift(char* pcLogFile)
 	CStackBuffer* pFrmBuffer = pBufferPool->GetBuffer(EBuffer::frm);	
 	//--------------------------------------------------------------
 	fprintf(pFile, "# full frame alignment\n");
+	CInput* pInput = CInput::GetInstance();
+	float afRefShift[2] = {0.0f};
+	if(pInput->m_iFmRef >= 1 && 
+	   pInput->m_iFmRef < pFrmBuffer->m_iNumFrames)
+	{	m_pFullShift->GetShift(pInput->m_iFmRef-1, afRefShift);
+	}
 	for(int i=0; i<pFrmBuffer->m_iNumFrames; i++)
 	{	m_pFullShift->GetShift(i, afShift);
+		afShift[0] -= afRefShift[0];
+		afShift[1] -= afRefShift[1];
 		fprintf(pFile, pcFormat, i+1, afShift[0], afShift[1]); 
 	}
 	fclose(pFile);
