@@ -333,6 +333,10 @@ void CCorrectFullShift::mSum(cufftComplex* gCmpFrm, int iNthSum)
 		m_pFrmBuffer->m_aiCmpSize, m_aStreams[0]);
 }
 
+//--------------------------------------------------------------------
+// 1. This is for generating aligned stack, which needs to be cropped
+//    to the final resolution.
+//--------------------------------------------------------------------
 void CCorrectFullShift::mCropFrame(cufftComplex* gCmpFrm)
 {
 	if(m_pInverseFFT == 0L) return;

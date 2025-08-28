@@ -1026,3 +1026,15 @@ MotionCor3 1.2.3 [05-27-2025]
       number of frames (signed integer overflow).
 2. Changes:
    1) Added support for EER compression 61002.
+
+MotionCor3 1.2.4 [08-27-2025]
+-----------------------------
+1. Bug Fix:
+   1) Dose weighted images are aberrated whereas the unweighted images are fine.
+      The bug is in Correct/CCorrectFullShift::mUnpadSums. In its call to
+      mEstimateCtf, which calles FindCtf/CFindCtfMain::DoIt. CFindCtfMain::DoIt
+      calls CResacleImage.cpp where it calls pBufPool->GetForwardFFT(0) and
+      pBufPool->GetInverseFFT(0). These two FFT instance are actuall called
+      in CCorrectFullShift::mUnpadSums with different FFT sizes.
+      Fix: In FindCtf/CRescaleImage.cpp, create its own CCufft2D objects instead
+      retrieving from CBufferPool.

@@ -57,9 +57,10 @@ void CRescaleImage::DoIt
 	cufftComplex* gCmpBuf = pTmpBuffer->GetFrame(0, 0);
 	pad2D.Pad(gfImg, piImgSize, (float*)gCmpBuf, 0);
 	//---------------------------
-	Util::CCufft2D* pForFFT = pBufPool->GetForwardFFT(0);
+	Util::CCufft2D* pForFFT = new Util::CCufft2D;
 	pForFFT->CreateForwardPlan(piImgSize, false);
 	pForFFT->Forward((float*)gCmpBuf, true);
+	delete pForFFT;
 	//---------------------------
 	Util::GFourierResize2D fftResize;
 	int aiCmpSize[] = {piImgSize[0] / 2 + 1, piImgSize[1]};
@@ -67,8 +68,9 @@ void CRescaleImage::DoIt
 	cufftComplex* gCmpImgN = (cufftComplex*)m_gfPadImgN;
 	fftResize.DoIt(gCmpBuf, aiCmpSize, gCmpImgN, aiCmpSizeN, 0);
 	//---------------------------
-	Util::CCufft2D* pInvFFT = pBufPool->GetInverseFFT(0);
+	Util::CCufft2D* pInvFFT = new Util::CCufft2D;
 	pInvFFT->CreateInversePlan(m_aiImgSizeN, false);
 	pInvFFT->Inverse(gCmpImgN);
+	delete pInvFFT;
 }
 
