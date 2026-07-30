@@ -152,7 +152,7 @@ void CGenStarFile::SetHotPixels
 		for(int x=0; x<iSizeX; x++)
 		{	if(pucBadMap[i+x] == 0) continue;
 			fprintf(m_pFile, "%13.6f  %13.6f\n", 
-			   x + 1.0f, iY);
+			   x + 1.0f, iY + 0.0f);
 		}
 	}
 	fprintf(m_pFile, "\n\n");
