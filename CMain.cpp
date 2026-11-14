@@ -143,6 +143,14 @@ bool CMain::mDoSingleCryoEM(void)
 	//-----------------
 	m_aProcessThread.DoIt(s_pLoadedPackage);
 	s_pLoadedPackage = 0L;
+	//-----------------------------------------------------
+	// Single-movie mode: nothing else will be queued for
+	// saving, so tell the save thread to exit as soon as
+	// its queue is empty. Without this it keeps polling
+	// for new packages (for up to 120 s) after the last
+	// file has been written, which delays the exit.
+	//-----------------------------------------------------
+	CSaveSerialCryoEM::GetInstance()->Stop();
 	mWaitSaveThread();
 	//-----------------
 	pGenStarFile->CloseFile();
